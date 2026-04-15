@@ -1,15 +1,26 @@
 import React from "react";
 import type { Route } from "../../+types/root";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "TaskManager" },
-    { name: "description", content: "Welcome to React Router!" },
+    { name: "description", content: "Welcome to TaskManager!" },
   ];
 }
 
 const Homepage = () => {
-  return <div>Homepage</div>;
+  return (
+    <div className="w-full h-full flex items-center justify-center ">
+      <Link to="/sign-in">
+        <Button className="bg-blue-500 text-white">Login</Button>
+      </Link>
+      <Link to="/sign-up">
+        <Button className="bg-green-500 text-white">Sign Up</Button>
+      </Link>
+    </div>
+  );
 };
 
 export default Homepage;
