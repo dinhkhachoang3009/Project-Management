@@ -12,7 +12,7 @@ export function meta({}: Route.MetaArgs) {
 
 const Homepage = () => {
   return (
-    <div className="w-full h-full flex items-center justify-center ">
+    <div className="w-full h-screen flex items-center justify-center gap-4 ">
       <Link to="/sign-in">
         <Button className="bg-blue-500 text-white">Login</Button>
       </Link>
