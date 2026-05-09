@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router";
 
 type SigninFormData = z.infer<typeof signInSchema>;
@@ -59,7 +60,7 @@ const SignIn = () => {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <input
+                      <Input
                         type="email"
                         placeholder="email@example.com"
                         {...field}
@@ -85,7 +86,7 @@ const SignIn = () => {
                       </Link>
                     </div>
                     <FormControl>
-                      <input
+                      <Input
                         type="password"
                         placeholder="********"
                         {...field}
@@ -103,7 +104,10 @@ const SignIn = () => {
           <CardFooter className="flex items-center justify-center mt-6">
             <div className="flex items-center justify-center ">
               <p className="text-muted-foreground text-sm">
-                Don't have an account? <Link to="/sign-up">Sign up</Link>
+                Don't have an account?{" "}
+                <Link to="/sign-up" className="text-blue-600">
+                  Sign up
+                </Link>
               </p>
             </div>
           </CardFooter>

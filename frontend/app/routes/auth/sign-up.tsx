@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router";
 
 type SignupFormData = z.infer<typeof signUpSchema>;
@@ -61,7 +62,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <input
+                      <Input
                         type="email"
                         placeholder="email@example.com"
                         {...field}
@@ -79,7 +80,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <input
+                      <Input
                         type="password"
                         placeholder="********"
                         {...field}
@@ -96,11 +97,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <input
-                        type="text"
-                        placeholder="John Doe"
-                        {...field}
-                      />
+                      <Input type="text" placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,7 +110,7 @@ const SignUp = () => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <input
+                      <Input
                         type="password"
                         placeholder="********"
                         {...field}
@@ -128,13 +125,10 @@ const SignUp = () => {
               </Button>
             </form>
           </Form>
-          <CardFooter  className ="flex items-center justify-center mt-6">
+          <CardFooter className="flex items-center justify-center mt-6">
             <div className="flex items-center justify-center ">
               <p className="text-muted-foreground text-sm">
-                Already have an account?{" "}
-                <Link to="/sign-in">
-                  Sign in
-                </Link>
+                Already have an account? <Link to="/sign-in">Sign in</Link>
               </p>
             </div>
           </CardFooter>
