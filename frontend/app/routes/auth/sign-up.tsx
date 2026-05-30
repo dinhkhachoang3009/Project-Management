@@ -128,7 +128,7 @@ const SignUp = () => {
           <CardFooter className="flex items-center justify-center mt-6">
             <div className="flex items-center justify-center ">
               <p className="text-muted-foreground text-sm">
-                Already have an account? <Link to="/sign-in">Sign in</Link>
+                Already have an account? <Link to="/sign-in" className="text-blue-600">Sign in</Link>
               </p>
             </div>
           </CardFooter>
