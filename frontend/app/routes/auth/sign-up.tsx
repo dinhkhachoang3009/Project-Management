@@ -22,8 +22,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router";
+import { useSignUpMutation } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
-type SignupFormData = z.infer<typeof signUpSchema>;
+export type SignupFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
   const form = useForm<SignupFormData>({
@@ -36,8 +38,22 @@ const SignUp = () => {
     },
   });
 
+  const { mutate, isPending } = useSignUpMutation();
+
   const handleOnSubmit = (values: SignupFormData) => {
-    console.log(values);
+    mutate(values, {
+      onSuccess: () => {
+        toast.success(
+          "Account created successfully! Please sign in to continue.",
+        );
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error.response?.data?.message || "An error occurred.";
+        console.log(error);
+        toast.error(errorMessage);
+      },
+    });
   };
 
   return (
@@ -120,15 +136,18 @@ const SignUp = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Sign Up
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "Signing Up..." : "Sign Up"}
               </Button>
             </form>
           </Form>
           <CardFooter className="flex items-center justify-center mt-6">
             <div className="flex items-center justify-center ">
               <p className="text-muted-foreground text-sm">
-                Already have an account? <Link to="/sign-in" className="text-blue-600">Sign in</Link>
+                Already have an account?{" "}
+                <Link to="/sign-in" className="text-blue-600">
+                  Sign in
+                </Link>
               </p>
             </div>
           </CardFooter>
