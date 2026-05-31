@@ -1,10 +1,9 @@
-import e from 'express';
-import authRoutes from './auth.js';
-import taskRoutes from './tasks.js';
+import express from "express";
 
-const router = e.Router();
+import authRoutes from "./auth.js";
 
-router.use('/auth', authRoutes);
-router.use('/tasks', taskRoutes);
+const router = express.Router();
+
+router.use("/auth", authRoutes);
 
 export default router;
