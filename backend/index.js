@@ -9,6 +9,7 @@ dotenv.config();
 
 const app = express();
 
+app.use(morgan("dev"));
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
@@ -16,7 +17,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-app.use(morgan("dev"));
 
 //db connection
 mongoose
