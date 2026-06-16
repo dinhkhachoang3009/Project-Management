@@ -14,3 +14,10 @@ export const useVerifyEmailMutation = () => {
       postData("/auth/verify-email", data),
   });
 };
+
+export const useLoginMutation = () => {
+  return useMutation({
+    mutationFn: (data: { email: string; password: string }) =>
+      postData("/auth/login", data),
+  });
+}
