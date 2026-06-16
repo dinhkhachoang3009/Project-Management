@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import type {SignupFormData} from "@/routes/auth/sign-up";
+import type { SignupFormData } from "@/routes/auth/sign-up";
 import { postData } from "@/lib/fetch-util";
 
 export const useSignUpMutation = () => {
@@ -8,3 +8,9 @@ export const useSignUpMutation = () => {
   });
 };
 
+export const useVerifyEmailMutation = () => {
+  return useMutation({
+    mutationFn: (data: { token: string }) =>
+      postData("/auth/verify-email", data),
+  });
+};
