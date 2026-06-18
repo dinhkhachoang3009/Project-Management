@@ -16,5 +16,17 @@ export default [
   ]),
   layout("routes/dashboard/dashboard-layout.tsx", [
     route("dashboard", "routes/dashboard/index.tsx"),
+    route("workspaces", "routes/dashboard/workspaces/index.tsx"),
+    route(
+      "workspaces/:workspaceId",
+      "routes/dashboard/workspaces/workspace-details.tsx"
+    ),
+    route("my-tasks", "routes/dashboard/my-tasks.tsx"),
+    route("members", "routes/dashboard/members.tsx"),
   ]),
+
+  route(
+    "workspace-invite/:workspaceId",
+    "routes/dashboard/workspaces/workspace-invite.tsx"
+  ),
 ] satisfies RouteConfig;
