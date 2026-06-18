@@ -24,6 +24,12 @@ export const useCreateTask = () => {
       queryClient.invalidateQueries({
         queryKey: ["project-tasks", variables.projectId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
     },
   });
 };
@@ -61,6 +67,12 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({
         queryKey: ["project-tasks"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
     },
   });
 };
@@ -78,6 +90,12 @@ export const useUpdateTaskStatus = () => {
       queryClient.invalidateQueries({
         queryKey: ["project-tasks"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
     },
   });
 };
@@ -91,6 +109,12 @@ export const useUpdateTaskPriority = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["task", variables.taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
       });
     },
   });
@@ -108,6 +132,12 @@ export const useUpdateTaskAssignees = () => {
       queryClient.invalidateQueries({
         queryKey: ["task", variables.taskId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
     },
   });
 };
@@ -121,6 +151,9 @@ export const useWatchTaskMutation = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["task", variables.taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
       });
     },
   });
@@ -138,6 +171,12 @@ export const useAchievedTaskMutation = () => {
       });
       queryClient.invalidateQueries({
         queryKey: ["project-tasks"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
       });
     },
   });
