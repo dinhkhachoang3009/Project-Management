@@ -44,6 +44,27 @@ export const useTaskByIdQuery = (taskId: string) => {
   });
 };
 
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      taskId: string;
+      title?: string;
+      description?: string;
+      subtasks?: { title: string; completed: boolean }[];
+    }) => updateData(`/tasks/${data.taskId}`, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", variables.taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project-tasks"],
+      });
+    },
+  });
+};
+
 export const useUpdateTaskStatus = () => {
   const queryClient = useQueryClient();
 

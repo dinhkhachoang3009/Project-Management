@@ -179,6 +179,26 @@ const updateTaskAssignees = async (req, res) => {
   }
 };
 
+const updateTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { title, description } = req.body;
+
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+
+    await task.save();
+
+    res.status(200).json(task);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const watchTask = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -248,6 +268,7 @@ export {
   createTask,
   getProjectTasks,
   getTaskById,
+  updateTask,
   updateTaskStatus,
   updateTaskPriority,
   updateTaskAssignees,

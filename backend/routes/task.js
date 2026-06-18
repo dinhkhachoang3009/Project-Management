@@ -6,6 +6,7 @@ import {
   createTask,
   getProjectTasks,
   getTaskById,
+  updateTask,
   updateTaskStatus,
   updateTaskPriority,
   updateTaskAssignees,
@@ -13,6 +14,11 @@ import {
   achieveTask,
   getMyTasks,
 } from "../controllers/task-controller.js";
+import {
+  addComment,
+  getCommentsByTaskId,
+  deleteComment,
+} from "../controllers/comment-controller.js";
 
 const router = express.Router();
 
@@ -47,6 +53,19 @@ router.get(
   authMiddleware,
   validateRequest({ params: z.object({ taskId: z.string() }) }),
   getTaskById
+);
+
+router.put(
+  "/:taskId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+    }),
+  }),
+  updateTask
 );
 
 router.put(
@@ -91,6 +110,30 @@ router.post(
   authMiddleware,
   validateRequest({ params: z.object({ taskId: z.string() }) }),
   achieveTask
+);
+
+router.post(
+  "/:taskId/comments",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({ text: z.string().min(1, "Comment text is required") }),
+  }),
+  addComment
+);
+
+router.get(
+  "/:taskId/comments",
+  authMiddleware,
+  validateRequest({ params: z.object({ taskId: z.string() }) }),
+  getCommentsByTaskId
+);
+
+router.delete(
+  "/comments/:commentId",
+  authMiddleware,
+  validateRequest({ params: z.object({ commentId: z.string() }) }),
+  deleteComment
 );
 
 export default router;
