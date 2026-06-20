@@ -4,7 +4,7 @@ import { Loader } from "@/components/loader";
 import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import { fetchData } from "@/lib/fetch-util";
 import { useAuth } from "@/provider/auth-context";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import { useState } from "react";
 import { Navigate, Outlet } from "react-router";
 
@@ -13,7 +13,8 @@ export const clientLoader = async () => {
     const [workspaces] = await Promise.all([fetchData("/workspaces")]);
     return { workspaces };
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return { workspaces: [] };
   }
 };
 const DashboardLayout = () => {

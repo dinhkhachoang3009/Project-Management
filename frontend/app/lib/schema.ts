@@ -1,4 +1,4 @@
-import { ProjectStatus } from "@/routes/types";
+import { ProjectStatus } from "@/types";
 import { z } from "zod";
 
 export const signInSchema = z.object({

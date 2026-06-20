@@ -13,7 +13,7 @@ import {
   useAcceptInviteByTokenMutation,
   useGetWorkspaceDetailsQuery,
 } from "@/hooks/use-workspace";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";

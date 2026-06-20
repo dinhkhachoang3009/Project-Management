@@ -1,6 +1,6 @@
 import { fetchData } from "@/lib/fetch-util";
 import { useQuery } from "@tanstack/react-query";
-import type { ActivityLog } from "@/routes/types";
+import type { ActivityLog } from "@/types";
 import {
   CheckCircle2,
   Circle,

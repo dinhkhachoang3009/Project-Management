@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { User } from "@/routes/types";
+import type { User } from "@/types";
 
 export const Watchers = ({ watchers }: { watchers: User[] }) => {
   return (

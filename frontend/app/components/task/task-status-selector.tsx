@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateTaskStatus } from "@/hooks/use-task";
-import type { TaskStatus } from "@/routes/types";
+import type { TaskStatus } from "@/types";
 import { toast } from "sonner";
 
 export const TaskStatusSelector = ({

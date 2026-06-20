@@ -1,5 +1,5 @@
 import { projectSchema } from "@/lib/schema";
-import { ProjectStatus, type MemberProps } from "@/routes/types";
+import { ProjectStatus, type MemberProps } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

@@ -11,7 +11,7 @@ import {
 import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import { WorkspaceAvatar } from "@/components/workspace/workspace-avatar";
 import { useGetWorkspacesQuery } from "@/hooks/use-workspace";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import { PlusCircle, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";

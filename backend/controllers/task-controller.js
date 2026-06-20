@@ -3,6 +3,24 @@ import Task from "../models/task.js";
 import ActivityLog from "../models/activity.js";
 import { recordActivity } from "../libs/index.js";
 
+const checkTaskPermission = async (taskId, userId) => {
+  const task = await Task.findById(taskId);
+  if (!task) return { error: "Task not found", status: 404 };
+
+  const project = await Project.findById(task.project);
+  if (!project) return { error: "Project not found", status: 404 };
+
+  const isMember = project.members.some(
+    (member) => member.user.toString() === userId.toString()
+  );
+
+  if (!isMember) {
+    return { error: "You are not a member of this project", status: 403 };
+  }
+
+  return { task, project, error: null };
+};
+
 const createTask = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -140,8 +158,11 @@ const updateTaskTitle = async (req, res) => {
     const { taskId } = req.params;
     const { title } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     task.title = title;
     await task.save();
@@ -166,8 +187,11 @@ const updateTaskDescription = async (req, res) => {
     const { taskId } = req.params;
     const { description } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     task.description = description;
     await task.save();
@@ -192,8 +216,11 @@ const updateTask = async (req, res) => {
     const { taskId } = req.params;
     const { title, description } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
@@ -220,8 +247,11 @@ const updateTaskStatus = async (req, res) => {
     const { taskId } = req.params;
     const { status } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status: statusCode } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(statusCode).json({ message: error });
 
     task.status = status;
     await task.save();
@@ -247,8 +277,11 @@ const updateTaskPriority = async (req, res) => {
     const { taskId } = req.params;
     const { priority } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     task.priority = priority;
     await task.save();
@@ -273,8 +306,11 @@ const updateTaskAssignees = async (req, res) => {
     const { taskId } = req.params;
     const { assignees } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     task.assignees = assignees;
     await task.save();
@@ -298,8 +334,11 @@ const watchTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     const isWatching = task.watchers.some(
       (w) => w.toString() === req.user._id.toString()
@@ -326,8 +365,11 @@ const achieveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     task.isArchived = !task.isArchived;
     await task.save();
@@ -372,8 +414,11 @@ const addSubTask = async (req, res) => {
     const { taskId } = req.params;
     const { title } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     const subtask = { title, completed: false };
     task.subtasks.push(subtask);
@@ -401,8 +446,11 @@ const updateSubTask = async (req, res) => {
     const { taskId, subTaskId } = req.params;
     const { completed } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ message: "Task not found" });
+    const { task, error, status } = await checkTaskPermission(
+      taskId,
+      req.user._id
+    );
+    if (error) return res.status(status).json({ message: error });
 
     const subtask = task.subtasks.id(subTaskId);
     if (!subtask) return res.status(404).json({ message: "Subtask not found" });

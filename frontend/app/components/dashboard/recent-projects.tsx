@@ -1,4 +1,4 @@
-import type { Project } from "@/routes/types";
+import type { Project } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getProjectProgress, getTaskStatusColor } from "@/lib";
 import { Link, useSearchParams } from "react-router";

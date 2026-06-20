@@ -12,7 +12,7 @@ import type {
   TaskPriorityData,
   TaskTrendsData,
   WorkspaceProductivityData,
-} from "@/routes/types";
+} from "@/types";
 import { useSearchParams } from "react-router";
 
 const Dashboard = () => {

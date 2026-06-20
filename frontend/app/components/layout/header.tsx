@@ -1,5 +1,5 @@
 import { useAuth } from "@/provider/auth-context";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Bell, PlusCircle } from "lucide-react";
 import {
@@ -29,7 +29,8 @@ export const Header = ({
   const navigate = useNavigate();
 
   const { user, logout } = useAuth();
-  const { workspaces } = useLoaderData() as { workspaces: Workspace[] };
+  const loaderData = useLoaderData() as { workspaces: Workspace[] } | undefined;
+  const workspaces = loaderData?.workspaces || [];
   const isOnWorkspacePage = useLocation().pathname.includes("/workspace");
 
   const handleOnClick = (workspace: Workspace) => {

@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCreateTask } from "@/hooks/use-task";
 import { toast } from "sonner";
-import type { TaskStatus, TaskPriority } from "@/routes/types";
+import type { TaskStatus, TaskPriority } from "@/types";
 
 const createTaskSchema = z.object({
   title: z.string().min(1, "Task title is required"),

@@ -4,7 +4,7 @@ import { InviteMemberDialog } from "@/components/workspace/invite-member";
 import { ProjectList } from "@/components/workspace/project-list";
 import { WorkspaceHeader } from "@/components/workspace/workspace-header";
 import { useGetWorkspaceQuery } from "@/hooks/use-workspace";
-import type { Project, Workspace } from "@/routes/types";
+import type { Project, Workspace } from "@/types";
 import { useState } from "react";
 import { useParams } from "react-router";
 

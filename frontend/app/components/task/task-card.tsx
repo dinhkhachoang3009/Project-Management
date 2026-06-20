@@ -1,4 +1,4 @@
-import type { Task, TaskStatus } from "@/routes/types";
+import type { Task, TaskStatus } from "@/types";
 import { useNavigate, useParams } from "react-router";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +31,9 @@ export const TaskCard = ({ task }: TaskCardProps) => {
   };
 
   const handleClick = () => {
+    const projectId = typeof task.project === "string" ? task.project : task.project?._id;
     navigate(
-      `/workspaces/${workspaceId}/projects/${task.project}/tasks/${task._id}`
+      `/workspaces/${workspaceId}/projects/${projectId}/tasks/${task._id}`
     );
   };
 

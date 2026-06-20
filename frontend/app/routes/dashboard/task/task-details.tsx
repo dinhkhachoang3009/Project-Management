@@ -17,7 +17,7 @@ import {
   useWatchTaskMutation,
 } from "@/hooks/use-task";
 import { useAuth } from "@/provider/auth-context";
-import type { Project, Task } from "@/routes/types";
+import type { Project, Task } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff } from "lucide-react";
 import { useParams } from "react-router";

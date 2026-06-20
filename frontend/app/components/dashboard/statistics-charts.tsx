@@ -4,7 +4,7 @@ import type {
   TaskPriorityData,
   TaskTrendsData,
   WorkspaceProductivityData,
-} from "@/routes/types";
+} from "@/types";
 import {
   Card,
   CardContent,

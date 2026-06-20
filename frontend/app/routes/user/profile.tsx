@@ -26,7 +26,7 @@ import {
   useUserProfileQuery,
 } from "@/hooks/use-user";
 import { useAuth } from "@/provider/auth-context";
-import type { User } from "@/routes/types";
+import type { User } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";

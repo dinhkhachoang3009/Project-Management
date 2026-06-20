@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useUpdateTaskAssignees } from "@/hooks/use-task";
-import type { User } from "@/routes/types";
+import type { User } from "@/types";
 import { toast } from "sonner";
 
 export const TaskAssigneesSelector = ({

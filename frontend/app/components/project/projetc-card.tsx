@@ -1,4 +1,4 @@
-import type { Project } from "@/routes/types";
+import type { Project } from "@/types";
 import { Link } from "react-router";
 import {
   Card,

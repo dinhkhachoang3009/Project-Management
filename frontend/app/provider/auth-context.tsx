@@ -25,6 +25,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // check if user is authenticated
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const checkAuth = async () => {
       setIsLoading(true);
 
@@ -51,6 +53,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handleLogout = () => {
       logout();
       navigate("/sign-in");

@@ -1,4 +1,4 @@
-import type { User, Workspace } from "@/routes/types";
+import type { User, Workspace } from "@/types";
 import { WorkspaceAvatar } from "./workspace-avatar";
 import { Button } from "@/components/ui/button";
 import { Plus, UserPlus } from "lucide-react";

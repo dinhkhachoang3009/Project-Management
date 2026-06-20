@@ -1,4 +1,4 @@
-import type { StatsCardProps } from "@/routes/types";
+import type { StatsCardProps } from "@/types";
 import {
   Card,
   CardContent,

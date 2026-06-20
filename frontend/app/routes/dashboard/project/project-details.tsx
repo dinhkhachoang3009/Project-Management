@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectTasksQuery } from "@/hooks/use-task";
 import { getProjectProgress } from "@/lib";
-import type { Project, Task, TaskStatus } from "@/routes/types";
+import type { Project, Task, TaskStatus } from "@/types";
 import { useState } from "react";
 import { useParams } from "react-router";
 

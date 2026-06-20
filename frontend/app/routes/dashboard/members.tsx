@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetWorkspaceDetailsQuery } from "@/hooks/use-workspace";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 

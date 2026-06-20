@@ -1,4 +1,4 @@
-import type { Task } from "@/routes/types";
+import type { Task } from "@/types";
 import { Link, useSearchParams } from "react-router";
 import {
   Card,

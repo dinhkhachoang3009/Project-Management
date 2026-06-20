@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/provider/auth-context";
-import type { Workspace } from "@/routes/types";
+import type { Workspace } from "@/types";
 import {
   CheckCircle2,
   ChevronsLeft,

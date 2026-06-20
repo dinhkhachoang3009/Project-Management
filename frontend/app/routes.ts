@@ -31,6 +31,8 @@ export default [
     ),
     route("my-tasks", "routes/dashboard/my-tasks.tsx"),
     route("members", "routes/dashboard/members.tsx"),
+    route("settings", "routes/dashboard/settings.tsx"),
+    route("achieved", "routes/dashboard/achieved.tsx"),
   ]),
 
   route(

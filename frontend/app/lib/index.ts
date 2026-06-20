@@ -1,4 +1,4 @@
-import type { ProjectStatus, TaskStatus } from "@/routes/types";
+import type { ProjectStatus, TaskStatus } from "@/types";
 
 export const publicRoutes = [
   "/",

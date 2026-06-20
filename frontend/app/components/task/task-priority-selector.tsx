@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateTaskPriority } from "@/hooks/use-task";
-import type { TaskPriority } from "@/routes/types";
+import type { TaskPriority } from "@/types";
 import { toast } from "sonner";
 
 export const TaskPrioritySelector = ({

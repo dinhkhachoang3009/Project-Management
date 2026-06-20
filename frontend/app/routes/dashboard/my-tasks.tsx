@@ -19,11 +19,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetMyTasksQuery } from "@/hooks/use-task";
-import type { Task } from "@/routes/types";
+import type { Task } from "@/types";
 import { format } from "date-fns";
 import { ArrowUpRight, CheckCircle, Clock, FilterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
+
+const getProjectInfo = (task: Task) => {
+  const project = task.project;
+  if (typeof project === "string") {
+    return { projectId: project, workspaceId: "" };
+  }
+  return {
+    projectId: project?._id || "",
+    workspaceId: typeof project?.workspace === "string" ? project.workspace : project?.workspace?._id || "",
+  };
+};
 
 const MyTasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -181,26 +192,28 @@ const MyTasks = () => {
 
             <CardContent>
               <div className="divide-y">
-                {sortedTasks?.map((task) => (
-                  <div key={task._id} className="p-4 hover:bg-muted/50">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-3">
-                      <div className="flex">
-                        <div className="flex gap-2 mr-2">
-                          {task.status === "Done" ? (
-                            <CheckCircle className="size-4 text-green-500" />
-                          ) : (
-                            <Clock className="size-4 text-yellow-500" />
-                          )}
-                        </div>
+                {sortedTasks?.map((task) => {
+                  const { projectId, workspaceId } = getProjectInfo(task);
+                  return (
+                    <div key={task._id} className="p-4 hover:bg-muted/50">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-3">
+                        <div className="flex">
+                          <div className="flex gap-2 mr-2">
+                            {task.status === "Done" ? (
+                              <CheckCircle className="size-4 text-green-500" />
+                            ) : (
+                              <Clock className="size-4 text-yellow-500" />
+                            )}
+                          </div>
 
-                        <div>
-                          <Link
-                            to={`/workspaces/${(task.project as any).workspace}/projects/${(task.project as any)._id}/tasks/${task._id}`}
-                            className="font-medium hover:text-primary hover:underline transition-colors flex items-center"
-                          >
-                            {task.title}
-                            <ArrowUpRight className="size-4 ml-1" />
-                          </Link>
+                          <div>
+                            <Link
+                              to={`/workspaces/${workspaceId}/projects/${projectId}/tasks/${task._id}`}
+                              className="font-medium hover:text-primary hover:underline transition-colors flex items-center"
+                            >
+                              {task.title}
+                              <ArrowUpRight className="size-4 ml-1" />
+                            </Link>
                           <div className="flex items-center space-x-2 mt-1">
                             <Badge
                               variant={
@@ -237,15 +250,17 @@ const MyTasks = () => {
                         <div>
                           Project:{" "}
                           <span className="font-medium">
-                            {(task.project as any).title}
+                            {typeof task.project === "string"
+                              ? "Unknown"
+                              : task.project?.title || "Unknown"}
                           </span>
                         </div>
 
                         <div>Modified on: {format(task.updatedAt, "PPPP")}</div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {sortedTasks?.length === 0 && (
                   <div className="p-4 text-center text-sm text-muted-foreground">
@@ -280,35 +295,38 @@ const TaskColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => {
       </CardHeader>
 
       <CardContent className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
-        {tasks?.map((task) => (
-          <Card key={task._id} className="hover:shadow-md transition-shadow">
-            <Link
-              to={`/workspaces/${(task.project as any).workspace}/projects/${(task.project as any)._id}/tasks/${task._id}`}
-              className="block p-4"
-            >
-              <h3 className="font-medium">{task.title}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                {task.description || "No description "}
-              </p>
+        {tasks?.map((task) => {
+          const { projectId, workspaceId } = getProjectInfo(task);
+          return (
+            <Card key={task._id} className="hover:shadow-md transition-shadow">
+              <Link
+                to={`/workspaces/${workspaceId}/projects/${projectId}/tasks/${task._id}`}
+                className="block p-4"
+              >
+                <h3 className="font-medium">{task.title}</h3>
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {task.description || "No description "}
+                </p>
 
-              <div className="flex items-center mt-2 gap-2">
-                <Badge
-                  variant={
-                    task.priority === "High" ? "destructive" : "secondary"
-                  }
-                >
-                  {task.priority}
-                </Badge>
+                <div className="flex items-center mt-2 gap-2">
+                  <Badge
+                    variant={
+                      task.priority === "High" ? "destructive" : "secondary"
+                    }
+                  >
+                    {task.priority}
+                  </Badge>
 
-                {task.dueDate && (
-                  <span className="text-sm text-muted-foreground">
-                    {format(task.dueDate, "PPPP")}
-                  </span>
-                )}
-              </div>
-            </Link>
-          </Card>
-        ))}
+                  {task.dueDate && (
+                    <span className="text-sm text-muted-foreground">
+                      {format(task.dueDate, "PPPP")}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </Card>
+          );
+        })}
 
         {tasks?.length === 0 && (
           <div className="p-4 text-center text-sm text-muted-foreground">

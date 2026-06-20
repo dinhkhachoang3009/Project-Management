@@ -7,7 +7,7 @@ import {
   useAddSubTaskMutation,
   useUpdateSubTaskMutation,
 } from "@/hooks/use-task";
-import type { Subtask } from "@/routes/types";
+import type { Subtask } from "@/types";
 import { toast } from "sonner";
 
 export const SubTasksDetails = ({

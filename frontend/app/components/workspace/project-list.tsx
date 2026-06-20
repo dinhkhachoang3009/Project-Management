@@ -1,4 +1,4 @@
-import type { Project } from "@/routes/types";
+import type { Project } from "@/types";
 import { NoDataFound } from "@/components/no-data-found";
 import { ProjectCard } from "@/components/project/projetc-card";
 
