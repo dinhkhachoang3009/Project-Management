@@ -10,11 +10,16 @@ dotenv.config();
 const app = express();
 
 app.use(morgan("dev"));
+if (!process.env.FRONTEND_URL) {
+  console.warn("⚠️  Warning: FRONTEND_URL is not set. CORS will allow all origins.");
+}
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   }),
 );
 
