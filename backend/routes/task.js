@@ -3,13 +3,18 @@ import authMiddleware from "../middleware/auth-middleware.js";
 import { validateRequest } from "zod-express-middleware";
 import { z } from "zod";
 import {
+  addSubTask,
   createTask,
+  getActivityByResourceId,
   getProjectTasks,
   getTaskById,
+  updateSubTask,
   updateTask,
-  updateTaskStatus,
-  updateTaskPriority,
   updateTaskAssignees,
+  updateTaskDescription,
+  updateTaskPriority,
+  updateTaskStatus,
+  updateTaskTitle,
   watchTask,
   achieveTask,
   getMyTasks,
@@ -39,6 +44,26 @@ router.post(
   createTask
 );
 
+router.post(
+  "/:taskId/add-subtask",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({ title: z.string().min(1, "Title is required") }),
+  }),
+  addSubTask
+);
+
+router.put(
+  "/:taskId/update-subtask/:subTaskId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string(), subTaskId: z.string() }),
+    body: z.object({ completed: z.boolean() }),
+  }),
+  updateSubTask
+);
+
 router.get("/my-tasks", authMiddleware, getMyTasks);
 
 router.get(
@@ -53,6 +78,26 @@ router.get(
   authMiddleware,
   validateRequest({ params: z.object({ taskId: z.string() }) }),
   getTaskById
+);
+
+router.put(
+  "/:taskId/title",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({ title: z.string().min(1, "Title is required") }),
+  }),
+  updateTaskTitle
+);
+
+router.put(
+  "/:taskId/description",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({ description: z.string() }),
+  }),
+  updateTaskDescription
 );
 
 router.put(
@@ -110,6 +155,15 @@ router.post(
   authMiddleware,
   validateRequest({ params: z.object({ taskId: z.string() }) }),
   achieveTask
+);
+
+router.get(
+  "/:resourceId/activity",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ resourceId: z.string() }),
+  }),
+  getActivityByResourceId
 );
 
 router.post(
