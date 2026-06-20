@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const decision = await aj.protect(req, { email }););
+    const decision = await aj.protect(req, { email });
 
     if (decision.isDenied()) {
       res.writeHead(403, { "Content-Type": "application/json" });
@@ -87,7 +87,9 @@ const loginUser = async (req, res) => {
           message: "Email not verified. Please check your inbox.",
         });
       } else {
-        await Verification.findByIdAndDelete(existingVerification._id);
+        if (existingVerification) {
+          await Verification.findByIdAndDelete(existingVerification._id);
+        }
         const verificationToken = jwt.sign(
           { userId: user._id, purpose: "email-verification" },
           process.env.JWT_SECRET,
@@ -108,11 +110,11 @@ const loginUser = async (req, res) => {
         const isEmailSent = await sendEmail(email, emailSubject, emailBody);
 
         if(!isEmailSent) {
-          return res.status(500).json({ 
-            message: "Failed to send verification email" 
+          return res.status(500).json({
+            message: "Failed to send verification email"
           });
         }
-        res.status(201).json({
+        return res.status(201).json({
           message: "Verification email sent successfully. Please check your inbox.",
         });
       }
