@@ -17,6 +17,7 @@ export interface Workspace {
   owner: User | string;
   color: string;
   members: {
+    _id?: string;
     user: User;
     role: "admin" | "member" | "owner" | "viewer";
     joinedAt: Date;
@@ -99,7 +100,7 @@ export interface Attachment {
 }
 
 export interface MemberProps {
-  _id: string;
+  _id?: string;
   user: User;
   role: "admin" | "member" | "owner" | "viewer";
   joinedAt: Date;

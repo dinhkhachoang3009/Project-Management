@@ -259,6 +259,7 @@ const MyTasks = () => {
                         <div>Modified on: {format(task.updatedAt, "PPPP")}</div>
                       </div>
                     </div>
+                  </div>
                   );
                 })}
 

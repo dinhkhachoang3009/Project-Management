@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface WorkspaceHeaderProps {
   workspace: Workspace;
   members: {
-    _id: string;
+    _id?: string;
     user: User;
     role: "admin" | "member" | "owner" | "viewer";
     joinedAt: Date;
@@ -62,7 +62,7 @@ export const WorkspaceHeader = ({
           <div className="flex space-x-2">
             {members.map((member) => (
               <Avatar
-                key={member._id}
+                key={member._id || member.user._id}
                 className="relative h-8 w-8 rounded-full  border-2 border-background overflow-hidden"
                 title={member.user.name}
               >

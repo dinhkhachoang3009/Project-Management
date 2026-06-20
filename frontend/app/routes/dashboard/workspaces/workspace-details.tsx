@@ -37,7 +37,7 @@ const WorkspaceDetails = () => {
     <div className="space-y-8">
       <WorkspaceHeader
         workspace={data.workspace}
-        members={data?.workspace?.members?.map((member: { _id: string; user: { _id: string; name: string; email: string; profilePicture?: string }; role: "admin" | "member" | "owner" | "viewer"; joinedAt: Date }) => ({
+        members={data?.workspace?.members?.map((member) => ({
           _id: member._id,
           user: member.user,
           role: member.role,
@@ -57,7 +57,7 @@ const WorkspaceDetails = () => {
         isOpen={isCreateProject}
         onOpenChange={setIsCreateProject}
         workspaceId={workspaceId}
-        workspaceMembers={data.workspace.members?.map((member: { _id: string; user: { _id: string; name: string; email: string; profilePicture?: string }; role: "admin" | "member" | "owner" | "viewer"; joinedAt: Date }) => ({
+        workspaceMembers={data.workspace.members?.map((member) => ({
           _id: member._id,
           user: member.user,
           role: member.role,

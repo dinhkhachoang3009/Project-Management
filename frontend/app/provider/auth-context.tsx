@@ -1,5 +1,5 @@
 import React, { createContext, useEffect } from "react";
-import type { User } from "../routes/types";
+import type { User } from "@/types";
 import { queryClient } from "./react-query-provider";
 import { useLocation, useNavigate } from "react-router";
 import { publicRoutes } from "../lib";

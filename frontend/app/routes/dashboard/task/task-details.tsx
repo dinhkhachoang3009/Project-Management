@@ -174,7 +174,7 @@ const TaskDetails = () => {
               <TaskAssigneesSelector
                 taskId={task._id}
                 assignees={task.assignees || []}
-                projectMembers={project.members?.map((m: { user: { _id: string; name: string; email: string; profilePicture?: string }; role: string }) => ({
+                projectMembers={project.members?.map((m) => ({
                   user: m.user,
                   role: m.role,
                 })) || []}
