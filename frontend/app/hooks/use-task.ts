@@ -230,3 +230,45 @@ export const useGetTaskActivityQuery = (resourceId: string) => {
     enabled: !!resourceId,
   });
 };
+
+export const useUpdateTaskTitle = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { taskId: string; title: string }) =>
+      updateData(`/tasks/${data.taskId}/title`, { title: data.title }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", variables.taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project-tasks"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
+    },
+  });
+};
+
+export const useUpdateTaskDescription = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { taskId: string; description: string }) =>
+      updateData(`/tasks/${data.taskId}/description`, {
+        description: data.description,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", variables.taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project-tasks"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["my-tasks"],
+      });
+    },
+  });
+};

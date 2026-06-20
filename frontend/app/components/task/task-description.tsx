@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import { useUpdateTask } from "@/hooks/use-task";
+import { useUpdateTaskDescription } from "@/hooks/use-task";
 import { toast } from "sonner";
 
 export const TaskDescription = ({
@@ -14,7 +14,7 @@ export const TaskDescription = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState(description || "");
-  const { mutate, isPending } = useUpdateTask();
+  const { mutate, isPending } = useUpdateTaskDescription();
 
   const updateDescription = () => {
     mutate(
