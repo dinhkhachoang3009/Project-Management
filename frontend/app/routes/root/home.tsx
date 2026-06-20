@@ -145,7 +145,7 @@ export default function Homepage() {
           </div>
 
           {/* Right - Dashboard Image */}
-          <div className="relative hidden lg:flex justify-center">
+          <div className="relative flex justify-center mt-12 lg:mt-0">
             <div className="relative rounded-xl border border-gray-200 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden bg-gray-50">
               {/* NOTE: Save your dashboard screenshot as frontend/public/dashboard-preview.png */}
               <img
@@ -256,8 +256,7 @@ export default function Homepage() {
             <Link to="/sign-in">
               <Button
                 size="lg"
-                variant="outline"
-                className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 hover:text-white"
+                className="w-full sm:w-auto bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white"
               >
                 Sign In
               </Button>
