@@ -5,7 +5,9 @@ import { projectSchema } from "../libs/validate-schema.js";
 import { z } from "zod";
 import {
   createProject,
+  deleteProject,
   getProjectDetails,
+  updateProject,
 } from "../controllers/project-controller.js";
 
 const router = express.Router();
@@ -29,6 +31,25 @@ router.get(
     params: z.object({ projectId: z.string() }),
   }),
   getProjectDetails
+);
+
+router.put(
+  "/:projectId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ projectId: z.string() }),
+    body: projectSchema.partial(),
+  }),
+  updateProject
+);
+
+router.delete(
+  "/:projectId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ projectId: z.string() }),
+  }),
+  deleteProject
 );
 
 export default router;

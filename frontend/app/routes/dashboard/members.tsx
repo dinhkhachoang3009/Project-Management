@@ -1,6 +1,7 @@
 import { Loader } from "@/components/loader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,13 +11,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InviteMemberDialog } from "@/components/workspace/invite-member";
 import { useGetWorkspaceDetailsQuery } from "@/hooks/use-workspace";
 import type { Workspace } from "@/types";
+import { UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 
 const Members = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   const workspaceId = searchParams.get("workspaceId");
   const initialSearch = searchParams.get("search") || "";
@@ -64,6 +68,11 @@ const Members = () => {
     <div className="space-y-6">
       <div className="flex items-start md:items-center justify-between">
         <h1 className="text-2xl font-bold">Workspace Members</h1>
+
+        <Button onClick={() => setIsInviteOpen(true)}>
+          <UserPlus className="size-4 mr-2" />
+          Invite Member
+        </Button>
       </div>
 
       <Input
@@ -166,6 +175,12 @@ const Members = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <InviteMemberDialog
+        isOpen={isInviteOpen}
+        onOpenChange={setIsInviteOpen}
+        workspaceId={workspaceId}
+      />
     </div>
   );
 };

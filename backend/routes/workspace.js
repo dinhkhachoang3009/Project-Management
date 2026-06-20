@@ -4,11 +4,13 @@ import {
   acceptGenerateInvite,
   acceptInviteByToken,
   createWorkspace,
+  deleteWorkspace,
   getWorkspaceDetails,
   getWorkspaceProjects,
   getWorkspaceStats,
   getWorkspaces,
   inviteUserToWorkspace,
+  updateWorkspace,
 } from "../controllers/workspace-controller.js";
 import {
   inviteMemberSchema,
@@ -56,5 +58,22 @@ router.get("/", authMiddleware, getWorkspaces);
 router.get("/:workspaceId", authMiddleware, getWorkspaceDetails);
 router.get("/:workspaceId/projects", authMiddleware, getWorkspaceProjects);
 router.get("/:workspaceId/stats", authMiddleware, getWorkspaceStats);
+
+router.put(
+  "/:workspaceId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ workspaceId: z.string() }),
+    body: workspaceSchema.partial(),
+  }),
+  updateWorkspace
+);
+
+router.delete(
+  "/:workspaceId",
+  authMiddleware,
+  validateRequest({ params: z.object({ workspaceId: z.string() }) }),
+  deleteWorkspace
+);
 
 export default router;

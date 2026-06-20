@@ -69,7 +69,11 @@ const getWorkspaceDetails = async (req, res) => {
     }
 
     res.status(200).json(workspace);
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 const getWorkspaceProjects = async (req, res) => {
@@ -524,6 +528,72 @@ const acceptInviteByToken = async (req, res) => {
     });
   }
 };
+
+const updateWorkspace = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const { name, description, color } = req.body;
+
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    const userMemberInfo = workspace.members.find(
+      (member) => member.user.toString() === req.user._id.toString()
+    );
+
+    if (!userMemberInfo || !["admin", "owner"].includes(userMemberInfo.role)) {
+      return res.status(403).json({
+        message: "You are not authorized to update this workspace",
+      });
+    }
+
+    workspace.name = name || workspace.name;
+    workspace.description = description !== undefined ? description : workspace.description;
+    workspace.color = color || workspace.color;
+
+    await workspace.save();
+
+    recordActivity(
+      req.user._id,
+      "updated_workspace",
+      "Workspace",
+      workspace._id,
+      { name }
+    );
+
+    res.status(200).json(workspace);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteWorkspace = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    if (workspace.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Only workspace owner can delete this workspace",
+      });
+    }
+
+    await Workspace.findByIdAndDelete(workspaceId);
+
+    res.status(200).json({ message: "Workspace deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export {
   createWorkspace,
   getWorkspaces,
@@ -533,4 +603,6 @@ export {
   inviteUserToWorkspace,
   acceptGenerateInvite,
   acceptInviteByToken,
+  updateWorkspace,
+  deleteWorkspace,
 };

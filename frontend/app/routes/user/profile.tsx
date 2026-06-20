@@ -251,7 +251,11 @@ const Profile = () => {
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{(error as any).response?.data?.message || (error as Error).message}</AlertDescription>
+                  <AlertDescription>
+                    {error && typeof error === "object" && "response" in error
+                      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || (error as Error).message
+                      : "An error occurred"}
+                  </AlertDescription>
                 </Alert>
               )}
 

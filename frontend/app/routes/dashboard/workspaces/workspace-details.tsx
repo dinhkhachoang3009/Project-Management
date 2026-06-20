@@ -37,7 +37,12 @@ const WorkspaceDetails = () => {
     <div className="space-y-8">
       <WorkspaceHeader
         workspace={data.workspace}
-        members={data?.workspace?.members as any}
+        members={data?.workspace?.members?.map((member: { _id: string; user: { _id: string; name: string; email: string; profilePicture?: string }; role: "admin" | "member" | "owner" | "viewer"; joinedAt: Date }) => ({
+          _id: member._id,
+          user: member.user,
+          role: member.role,
+          joinedAt: member.joinedAt,
+        })) || []}
         onCreateProject={() => setIsCreateProject(true)}
         onInviteMember={() => setIsInviteMember(true)}
       />
@@ -52,7 +57,12 @@ const WorkspaceDetails = () => {
         isOpen={isCreateProject}
         onOpenChange={setIsCreateProject}
         workspaceId={workspaceId}
-        workspaceMembers={data.workspace.members as any}
+        workspaceMembers={data.workspace.members?.map((member: { _id: string; user: { _id: string; name: string; email: string; profilePicture?: string }; role: "admin" | "member" | "owner" | "viewer"; joinedAt: Date }) => ({
+          _id: member._id,
+          user: member.user,
+          role: member.role,
+          joinedAt: member.joinedAt,
+        })) || []}
       />
 
       <InviteMemberDialog
