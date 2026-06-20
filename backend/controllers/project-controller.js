@@ -1,5 +1,6 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
+import { recordActivity } from "../libs/index.js";
 
 const createProject = async (req, res) => {
   try {
@@ -52,6 +53,14 @@ const createProject = async (req, res) => {
 
     workspace.projects.push(newProject._id);
     await workspace.save();
+
+    recordActivity(
+      req.user._id,
+      "created_project",
+      "Project",
+      newProject._id,
+      { title, workspaceId }
+    );
 
     return res.status(201).json(newProject);
   } catch (error) {

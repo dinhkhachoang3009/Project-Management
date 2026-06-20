@@ -4,6 +4,7 @@ import User from "../models/user.js";
 import WorkspaceInvite from "../models/workspace-invite.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../libs/send-email.js";
+import { recordActivity } from "../libs/index.js";
 
 const createWorkspace = async (req, res) => {
   try {
@@ -22,6 +23,14 @@ const createWorkspace = async (req, res) => {
         },
       ],
     });
+
+    recordActivity(
+      req.user._id,
+      "created_workspace",
+      "Workspace",
+      workspace._id,
+      { name }
+    );
 
     res.status(201).json(workspace);
   } catch (error) {
@@ -224,6 +233,14 @@ const acceptGenerateInvite = async (req, res) => {
     });
 
     await workspace.save();
+
+    recordActivity(
+      req.user._id,
+      "joined_workspace",
+      "Workspace",
+      workspace._id,
+      { method: "open_link" }
+    );
 
     res.status(200).json({
       message: "Invitation accepted successfully",
@@ -495,6 +512,14 @@ const acceptInviteByToken = async (req, res) => {
     await Promise.all([
       WorkspaceInvite.deleteOne({ _id: inviteInfo._id }),
     ]);
+
+    recordActivity(
+      user,
+      "joined_workspace",
+      "Workspace",
+      workspace._id,
+      { method: "token" }
+    );
 
     res.status(200).json({
       message: "Invitation accepted successfully",

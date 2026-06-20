@@ -1,5 +1,6 @@
 import Comment from "../models/comment.js";
 import Task from "../models/task.js";
+import { recordActivity } from "../libs/index.js";
 
 const addComment = async (req, res) => {
   try {
@@ -20,6 +21,14 @@ const addComment = async (req, res) => {
     const populatedComment = await Comment.findById(comment._id).populate(
       "author",
       "name email profilePicture"
+    );
+
+    recordActivity(
+      req.user._id,
+      "added_comment",
+      "Comment",
+      comment._id,
+      { taskId }
     );
 
     res.status(201).json(populatedComment);
