@@ -188,3 +188,45 @@ export const useGetMyTasksQuery = () => {
     queryFn: async () => fetchData("/tasks/my-tasks"),
   });
 };
+
+export const useAddSubTaskMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { taskId: string; title: string }) =>
+      postData(`/tasks/${data.taskId}/add-subtask`, { title: data.title }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", variables.taskId],
+      });
+    },
+  });
+};
+
+export const useUpdateSubTaskMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      taskId: string;
+      subTaskId: string;
+      completed: boolean;
+    }) =>
+      updateData(`/tasks/${data.taskId}/update-subtask/${data.subTaskId}`, {
+        completed: data.completed,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", variables.taskId],
+      });
+    },
+  });
+};
+
+export const useGetTaskActivityQuery = (resourceId: string) => {
+  return useQuery({
+    queryKey: ["task-activity", resourceId],
+    queryFn: async () => fetchData(`/tasks/${resourceId}/activity`),
+    enabled: !!resourceId,
+  });
+};

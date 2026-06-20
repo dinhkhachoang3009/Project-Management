@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { useUpdateTask } from "@/hooks/use-task";
+import { Button } from "@/components/ui/button";
+import {
+  useAddSubTaskMutation,
+  useUpdateSubTaskMutation,
+} from "@/hooks/use-task";
 import type { Subtask } from "@/routes/types";
 import { toast } from "sonner";
 
@@ -13,70 +17,93 @@ export const SubTasksDetails = ({
   subTasks: Subtask[];
   taskId: string;
 }) => {
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
-  const { mutate } = useUpdateTask();
+  const [newSubTask, setNewSubTask] = useState("");
+  const { mutate: addSubTask, isPending } = useAddSubTaskMutation();
+  const { mutate: updateSubTask, isPending: isUpdating } =
+    useUpdateSubTaskMutation();
 
-  const handleToggle = (index: number) => {
-    const updated = subTasks.map((st, i) =>
-      i === index ? { ...st, completed: !st.completed } : st
-    );
-    mutate(
-      { taskId, subtasks: updated },
+  const handleToggleTask = (subTaskId: string, checked: boolean) => {
+    updateSubTask(
+      { taskId, subTaskId, completed: checked },
       {
-        onSuccess: () => toast.success("Subtask updated"),
-        onError: () => toast.error("Failed to update subtask"),
+        onSuccess: () => {
+          toast.success("Sub task updated successfully");
+        },
+        onError: (error: any) => {
+          const errMessage = error.response?.data?.message || "Failed to update sub task";
+          console.log(error);
+          toast.error(errMessage);
+        },
       }
     );
   };
 
-  const handleAdd = () => {
-    if (!newSubtaskTitle.trim()) return;
-    const updated = [
-      ...subTasks,
-      { title: newSubtaskTitle, completed: false },
-    ];
-    mutate(
-      { taskId, subtasks: updated },
+  const handleAddSubTask = () => {
+    if (!newSubTask.trim()) return;
+    addSubTask(
+      { taskId, title: newSubTask },
       {
         onSuccess: () => {
-          setNewSubtaskTitle("");
-          toast.success("Subtask added");
+          setNewSubTask("");
+          toast.success("Sub task added successfully");
         },
-        onError: () => toast.error("Failed to add subtask"),
+        onError: (error: any) => {
+          const errMessage = error.response?.data?.message || "Failed to add sub task";
+          console.log(error);
+          toast.error(errMessage);
+        },
       }
     );
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-muted-foreground">Subtasks</h3>
+    <div className="mb-6">
+      <h3 className="text-sm font-medium text-muted-foreground mb-0">
+        Sub Tasks
+      </h3>
 
-      <div className="space-y-2">
-        {subTasks.map((subtask, index) => (
-          <div key={subtask._id || index} className="flex items-center gap-2">
-            <Checkbox
-              checked={subtask.completed}
-              onCheckedChange={() => handleToggle(index)}
-            />
-            <span
-              className={`text-sm ${
-                subtask.completed ? "line-through text-muted-foreground" : ""
-              }`}
-            >
-              {subtask.title}
-            </span>
-          </div>
-        ))}
+      <div className="space-y-2 mb-4">
+        {subTasks.length > 0 ? (
+          subTasks.map((subTask) => (
+            <div key={subTask._id} className="flex items-center space-x-2">
+              <Checkbox
+                id={subTask._id}
+                checked={subTask.completed}
+                onCheckedChange={(checked) =>
+                  handleToggleTask(subTask._id, !!checked)
+                }
+                disabled={isUpdating}
+              />
+
+              <label
+                className={cn(
+                  "text-sm",
+                  subTask.completed ? "line-through text-muted-foreground" : ""
+                )}
+              >
+                {subTask.title}
+              </label>
+            </div>
+          ))
+        ) : (
+          <div className="text-sm text-muted-foreground">No sub tasks</div>
+        )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex">
         <Input
-          placeholder="Add a subtask"
-          value={newSubtaskTitle}
-          onChange={(e) => setNewSubtaskTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="Add a sub task"
+          value={newSubTask}
+          onChange={(e) => setNewSubTask(e.target.value)}
+          className="mr-1"
+          disabled={isPending}
+          onKeyDown={(e) => e.key === "Enter" && handleAddSubTask()}
         />
-        <Button size="sm" onClick={handleAdd}>
+
+        <Button
+          onClick={handleAddSubTask}
+          disabled={isPending || newSubTask.length === 0}
+        >
           Add
         </Button>
       </div>
