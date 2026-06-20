@@ -33,7 +33,6 @@ const addComment = async (req, res) => {
 
     res.status(201).json(populatedComment);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -48,7 +47,6 @@ const getCommentsByTaskId = async (req, res) => {
 
     res.status(200).json(comments);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -72,7 +70,6 @@ const deleteComment = async (req, res) => {
 
     res.status(200).json({ message: "Comment deleted" });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

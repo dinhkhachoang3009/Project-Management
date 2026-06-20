@@ -52,7 +52,6 @@ const ResetPassword = () => {
         onError: (error: any) => {
           const errorMessage = error.response?.data?.message;
           toast.error(errorMessage);
-          console.log(error);
         },
       }
     );

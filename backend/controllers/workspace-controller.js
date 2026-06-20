@@ -34,7 +34,6 @@ const createWorkspace = async (req, res) => {
 
     res.status(201).json(workspace);
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -49,7 +48,6 @@ const getWorkspaces = async (req, res) => {
 
     res.status(200).json(workspaces);
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -99,7 +97,6 @@ const getWorkspaceProjects = async (req, res) => {
 
     res.status(200).json({ projects, workspace });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -197,7 +194,6 @@ const inviteUserToWorkspace = async (req, res) => {
       message: "Invitation sent successfully",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -246,7 +242,6 @@ const acceptGenerateInvite = async (req, res) => {
       message: "Invitation accepted successfully",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -451,7 +446,6 @@ const getWorkspaceStats = async (req, res) => {
       recentProjects: projects.slice(0, 5),
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -525,7 +519,6 @@ const acceptInviteByToken = async (req, res) => {
       message: "Invitation accepted successfully",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });

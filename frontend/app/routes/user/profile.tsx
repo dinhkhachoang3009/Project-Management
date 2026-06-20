@@ -111,7 +111,6 @@ const Profile = () => {
         const errorMessage =
           error.response?.data?.message || "Failed to update password";
         toast.error(errorMessage);
-        console.log(error);
       },
     });
   };
@@ -127,7 +126,6 @@ const Profile = () => {
           const errorMessage =
             error.response?.data?.message || "Failed to update profile";
           toast.error(errorMessage);
-          console.log(error);
         },
       }
     );

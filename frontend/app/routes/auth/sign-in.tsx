@@ -45,14 +45,12 @@ const SignIn = () => {
     mutate(values, {
       onSuccess: (data) => {
         login(data);
-        console.log(data);
         toast.success("Login successful");
         navigate("/dashboard");
       },
       onError: (error: any) => {
         const errorMessage =
           error.response?.data?.message || "An error occurred";
-        console.log(error);
         toast.error(errorMessage);
       },
     });

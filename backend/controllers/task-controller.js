@@ -75,7 +75,6 @@ const createTask = async (req, res) => {
 
     res.status(201).json(newTask);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -109,7 +108,6 @@ const getProjectTasks = async (req, res) => {
 
     res.status(200).json({ project, tasks });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -148,7 +146,6 @@ const getTaskById = async (req, res) => {
 
     res.status(200).json({ task, project });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -177,7 +174,6 @@ const updateTaskTitle = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -206,7 +202,6 @@ const updateTaskDescription = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -237,7 +232,6 @@ const updateTask = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -267,7 +261,6 @@ const updateTaskStatus = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -296,7 +289,6 @@ const updateTaskPriority = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -325,7 +317,6 @@ const updateTaskAssignees = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -356,7 +347,6 @@ const watchTask = async (req, res) => {
 
     res.status(200).json({ message: isWatching ? "Unwatched" : "Watching" });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -387,7 +377,6 @@ const achieveTask = async (req, res) => {
       task,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -404,7 +393,6 @@ const getMyTasks = async (req, res) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -436,7 +424,6 @@ const addSubTask = async (req, res) => {
 
     res.status(201).json(addedSubtask);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -469,7 +456,6 @@ const updateSubTask = async (req, res) => {
 
     res.status(200).json(subtask);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -484,7 +470,6 @@ const getActivityByResourceId = async (req, res) => {
 
     res.status(200).json(activities);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

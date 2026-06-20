@@ -13,7 +13,6 @@ export const clientLoader = async () => {
     const [workspaces] = await Promise.all([fetchData("/workspaces")]);
     return { workspaces };
   } catch (error) {
-    console.error(error);
     return { workspaces: [] };
   }
 };

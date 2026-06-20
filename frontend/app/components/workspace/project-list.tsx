@@ -8,6 +8,14 @@ interface ProjectListProps {
   onCreateProject: () => void;
 }
 
+const getProjectProgress = (project: Project) => {
+  if (!project.tasks || project.tasks.length === 0) return 0;
+  const completedTasks = project.tasks.filter(
+    (task) => task.status === "Done"
+  ).length;
+  return Math.round((completedTasks / project.tasks.length) * 100);
+};
+
 export const ProjectList = ({
   workspaceId,
   projects,
@@ -26,7 +34,7 @@ export const ProjectList = ({
           />
         ) : (
           projects.map((project) => {
-            const projectProgress = 0;
+            const projectProgress = getProjectProgress(project);
 
             return (
               <ProjectCard

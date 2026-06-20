@@ -55,7 +55,6 @@ const SignUp = () => {
       onError: (error: any) => {
         const errorMessage =
           error.response?.data?.message || "An error occurred";
-        console.log(error);
         toast.error(errorMessage);
       },
     });

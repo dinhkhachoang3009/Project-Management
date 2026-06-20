@@ -64,7 +64,6 @@ const createProject = async (req, res) => {
 
     return res.status(201).json(newProject);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -95,7 +94,6 @@ const getProjectDetails = async (req, res) => {
 
     res.status(200).json(project);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       message: "Internal server error",
     });

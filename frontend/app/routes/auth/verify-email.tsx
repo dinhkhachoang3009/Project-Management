@@ -25,7 +25,6 @@ const VerifyEmail = () => {
             const errorMessage =
               error.response?.data?.message || "An error occurred";
             setIsSuccess(false);
-            console.log(error);
 
             toast.error(errorMessage);
           },

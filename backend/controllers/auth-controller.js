@@ -9,8 +9,7 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const decision = await aj.protect(req, { email });
-    console.log("Arcjet decision", decision.isDenied());
+    const decision = await aj.protect(req, { email }););
 
     if (decision.isDenied()) {
       res.writeHead(403, { "Content-Type": "application/json" });
