@@ -10,14 +10,6 @@ dotenv.config();
 const app = express();
 
 app.use(morgan("dev"));
-
-// Debug log: check critical env vars exist (without leaking values)
-console.log("[DEBUG] PORT:", process.env.PORT || "not set, using default 5000");
-console.log("[DEBUG] MONGO_URI exists:", !!process.env.MONGO_URI);
-console.log("[DEBUG] MONGO_URI prefix:", process.env.MONGO_URI ? process.env.MONGO_URI.substring(0, 20) + "..." : "undefined");
-console.log("[DEBUG] FRONTEND_URL:", process.env.FRONTEND_URL || "not set");
-console.log("[DEBUG] NODE_ENV:", process.env.NODE_ENV || "not set");
-
 if (!process.env.FRONTEND_URL) {
   console.warn("⚠️  Warning: FRONTEND_URL is not set. CORS will allow all origins.");
 }
@@ -32,11 +24,6 @@ app.use(
 );
 
 //db connection
-if (!process.env.MONGO_URI) {
-  console.error("[FATAL] MONGO_URI is not defined. Cannot connect to database.");
-  process.exit(1);
-}
-
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
