@@ -1,0 +1,12 @@
+node_modules
+.env
+.env.docker
+.env.local
+.env.*.local
+build
+coverage
+__tests__
+vitest.config.ts
+vitest.setup.ts
+eslint.config.mjs
+.DS_Store
