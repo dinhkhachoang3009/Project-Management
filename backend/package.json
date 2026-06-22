@@ -10,7 +10,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -29,6 +31,10 @@
     "zod-express-middleware": "^1.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.5.0",
+    "globals": "^17.6.0",
+    "jest": "^30.4.2",
     "nodemon": "^3.1.14"
   }
 }
