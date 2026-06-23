@@ -8,7 +8,7 @@ WORKDIR /app
 # Copy package files trước để tận dụng Docker layer cache
 COPY package*.json ./
 
-# Cài dependencies
+# Cài dependencies (force rebuild 2026-06-23)
 RUN npm install --omit=dev
 
 # Copy toàn bộ source
