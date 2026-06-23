@@ -1,10 +1,41 @@
-node_modules
-.env
-.env.docker
-.env.local
-.env.*.local
+# Git
+.git
+.gitignore
+.github
+
+# Tests
 coverage
 __tests__
-jest.config.mjs
-eslint.config.mjs
+*.test.js
+*.test.ts
+*.test.tsx
+
+# Node
+node_modules
+npm-debug.log*
+
+# Environment files (chỉ dùng .env.docker nếu cần)
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# IDE
+.vscode
+.idea
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.temp

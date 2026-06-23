@@ -1,8 +1,8 @@
-# Frontend Dockerfile
-# Multi-stage build để giảm image size
+# Frontend Dockerfile — Optimized Multi-Stage
+# Mục tiêu: Stage 2 chỉ chứa build output + production node_modules
 
 # Stage 1: Build
-FROM node:20-slim AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -11,23 +11,23 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 RUN npm run build
 
-# Stage 2: Production
-FROM node:20-slim
+# Loại bỏ devDependencies để stage 2 nhẹ hơn
+RUN npm prune --production --legacy-peer-deps
+
+# Stage 2: Production (chỉ chứa những gì cần để chạy)
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy build output và package.json
+# Copy build output và production dependencies từ builder
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
-
-# Chỉ cài production dependencies
-RUN npm prune --production --legacy-peer-deps
 
 EXPOSE 3000
 

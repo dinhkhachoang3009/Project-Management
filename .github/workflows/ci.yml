@@ -77,6 +77,12 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/lcov.info
+
   test-frontend:
     name: Test Frontend
     needs: lint-frontend
@@ -100,6 +106,26 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  sonarcloud:
+    name: SonarCloud Scan
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-and-push:
     name: Build & Push Docker Images
@@ -145,3 +171,39 @@ jobs:
           tags: |
             ${{ env.IMAGE_FE }}:latest
             ${{ env.IMAGE_FE }}:${{ github.sha }}
+
+  trivy-scan:
+    name: Trivy Security Scan
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Run Trivy scanner on backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/dinhkhachoang3009/taskmanager-be:${{ github.sha }}
+          format: sarif
+          output: trivy-be-results.sarif
+
+      - name: Run Trivy scanner on frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/dinhkhachoang3009/taskmanager-fe:${{ github.sha }}
+          format: sarif
+          output: trivy-fe-results.sarif
+
+      - name: Upload Trivy backend scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-be-results.sarif
+          category: backend
+
+      - name: Upload Trivy frontend scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fe-results.sarif
+          category: frontend

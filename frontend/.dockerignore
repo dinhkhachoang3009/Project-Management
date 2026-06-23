@@ -1,12 +1,44 @@
-node_modules
-.env
-.env.docker
-.env.local
-.env.*.local
-build
+# Git
+.git
+.gitignore
+.github
+
+# Tests
 coverage
 __tests__
-vitest.config.ts
-vitest.setup.ts
-eslint.config.mjs
+*.test.js
+*.test.ts
+*.test.tsx
+
+# Node
+node_modules
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# IDE
+.vscode
+.idea
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.temp
+
+# Build output (chỉ cần trong container, không cần copy từ host)
+build

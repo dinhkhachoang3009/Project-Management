@@ -1,17 +1,23 @@
-# Backend Dockerfile
-# Dùng node:20-slim để có đủ dependencies cho bcrypt và các native module
+# Backend Dockerfile — Optimized
+# Mục tiêu: Giảm image size bằng Alpine Linux + loại bỏ build dependencies
 
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Cài build dependencies tạm thờI để compile native modules (bcrypt)
+# Sau đó xóa ngay để giảm layer
+RUN apk add --no-cache --virtual .build-deps python3 make g++ \
+    && apk add --no-cache libc6-compat
 
 # Copy package files trước để tận dụng Docker layer cache
 COPY package*.json ./
 
-# Cài dependencies (force rebuild 2026-06-23)
-RUN npm install --omit=dev
+# Cài production dependencies, sau đó xóa build dependencies
+RUN npm install --omit=dev \
+    && apk del .build-deps
 
-# Copy toàn bộ source
+# Copy toàn bộ source (đã được .dockerignore lọc)
 COPY . .
 
 # Expose port
