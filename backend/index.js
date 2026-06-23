@@ -5,13 +5,14 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 
 import routes from "./routes/index.js";
+import logger from "./libs/logger.js";
 dotenv.config();
 
 const app = express();
 
 app.use(morgan("dev"));
 if (!process.env.FRONTEND_URL) {
-  console.warn("⚠️  Warning: FRONTEND_URL is not set. CORS will allow all origins.");
+  logger.warn("FRONTEND_URL is not set. CORS will allow all origins.");
 }
 
 app.use(
@@ -27,10 +28,10 @@ app.use(
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
   })
   .catch((err) => {
-    console.error("Failed to connect to MongoDB", err);
+    logger.error("Failed to connect to MongoDB", { error: err.message });
   });
 
 app.use(express.json());
@@ -45,7 +46,7 @@ app.use("/api-v1", routes);
 
 //error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error("Unhandled error", { error: err.message, stack: err.stack });
   res.status(500).json({ message: "Internal Server Error" });
 });
 
@@ -55,5 +56,5 @@ app.use((req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });
