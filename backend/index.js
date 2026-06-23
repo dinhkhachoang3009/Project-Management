@@ -6,6 +6,7 @@ import morgan from "morgan";
 
 import routes from "./routes/index.js";
 import logger from "./libs/logger.js";
+import { metricsMiddleware, metricsEndpoint } from "./libs/metrics.js";
 dotenv.config();
 
 const app = express();
@@ -36,11 +37,18 @@ mongoose
 
 app.use(express.json());
 
+// Metrics middleware — đo request count + latency
+app.use(metricsMiddleware);
+
 const PORT = process.env.PORT || 5000;
 
 app.get("/", async (req, res) => {
   res.status(200).json({ message: "Welcome to TaskManager API" });
 });
+
+// Prometheus metrics endpoint
+app.get("/metrics", metricsEndpoint);
+
 // http://localhost:5000/api-v1/
 app.use("/api-v1", routes);
 
