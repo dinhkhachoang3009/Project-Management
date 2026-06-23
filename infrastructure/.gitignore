@@ -1,0 +1,12 @@
+# Terraform state files — chứa thông tin nhạy cảm, không commit
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Env files chứa token
+.env
+*.env
+
+# Backup files
+*.backup
