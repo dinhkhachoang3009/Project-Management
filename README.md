@@ -1,4 +1,4 @@
-# TaskManager — Quản Lý Dự Án & Công Việc Nhóm / Team Project & Task Management
+﻿# TaskManager — Quản Lý Dự Án & Công Việc Nhóm / Team Project & Task Management
 
 > **Live Demo:** [https://taskmanager.qzz.io](https://taskmanager.qzz.io)
 
@@ -17,9 +17,9 @@
 | # | Tiếng Việt | English |
 |---|-----------|---------|
 | 1 | **Workspace** — Tạo không gian làm việc riêng cho từng nhóm, mỗi workspace có thể chứa nhiều dự án | Create dedicated workspaces for different teams, each holding multiple projects |
-| 2 | **Quản lý thành viên** — Mởi thành viên qua email, phân quyền Owner / Admin / Member / Viewer | Invite members via email with role-based access: Owner, Admin, Member, Viewer |
+| 2 | **Quản lý thành viên** — Mời thành viên qua email, phân quyền Owner / Admin / Member / Viewer | Invite members via email with role-based access: Owner, Admin, Member, Viewer |
 | 3 | **Dự án (Project)** — Tạo dự án trong workspace với trạng thái, tiến độ, ngày bắt đầu & hạn chót | Create projects with status, progress, start date & due date |
-| 4 | **Công việc (Task)** — Tạo task với trạng thái (To Do / In Progress / Done), mức độ ưu tiên (High / Medium / Low), ngườiphụ trách | Create tasks with status, priority, assignees, and due dates |
+| 4 | **Công việc (Task)** — Tạo task với trạng thái (To Do / In Progress / Done), mức độ ưu tiên (High / Medium / Low), người phụ trách | Create tasks with status, priority, assignees, and due dates |
 | 5 | **Subtask** — Chia nhỏ task thành các subtask có thể đánh dấu hoàn thành | Break tasks into subtasks with completion toggles |
 | 6 | **Bình luận** — Thảo luận trực tiếp trên từng task | Comment directly on tasks |
 | 7 | **Theo dõi (Watch)** — Theo dõi task để nhận cập nhật | Watch tasks to receive updates |
@@ -28,6 +28,8 @@
 | 10 | **Xác thực Email** — Đăng ký tài khoản yêu cầu xác thực email qua SendGrid | Email verification required for registration via SendGrid |
 | 11 | **Quên mật khẩu** — Gửi email reset password với token có hạn 15 phút | Forgot password flow with 15-minute reset token |
 | 12 | **Bảo mật** — Tích hợp Arcjet chống bot, rate limiting, validate email | Arcjet integration for bot detection, rate limiting, and email validation |
+| 13 | **Logging** — Ghi log bằng Winston với format JSON, timestamp, level | Structured JSON logging with Winston |
+| 14 | **Metrics & Monitoring** — Endpoint `/metrics` cho Prometheus, dashboard Grafana | Prometheus metrics endpoint + Grafana dashboards |
 
 ---
 
@@ -36,15 +38,19 @@
 ### Backend
 | Công nghệ | Mục đích |
 |-----------|----------|
-| Node.js + Express | Web server |
+| Node.js 20 + Express | Web server |
 | MongoDB + Mongoose | Database |
 | JWT | Authentication tokens |
 | bcrypt | Password hashing |
 | Zod + zod-express-middleware | Schema validation |
 | SendGrid | Transactional emails |
 | Arcjet | Security (bot detection, rate limiting) |
+| Winston | Structured logging (JSON, timestamp, levels) |
+| prom-client | Prometheus metrics collection |
 | Morgan | HTTP logging |
 | CORS | Cross-origin requests |
+| Jest | Unit testing |
+| ESLint | Code linting |
 
 ### Frontend
 | Công nghệ | Mục đích |
@@ -52,7 +58,9 @@
 | React 19 | UI library |
 | React Router 7 | Routing + SSR |
 | TypeScript | Type safety |
-| Tailwind CSS | Styling |
+| Tailwind CSS 4 | Styling |
+| @tailwindcss/vite | Tailwind Vite integration |
+| tw-animate-css | Tailwind animations |
 | Vite | Build tool |
 | TanStack Query | Server state management |
 | Axios | HTTP client |
@@ -61,6 +69,23 @@
 | shadcn/ui + Radix UI | UI components |
 | Sonner | Toast notifications |
 | date-fns | Date formatting |
+| Vitest | Unit testing |
+| Testing Library | Component testing |
+| jsdom | DOM environment for tests |
+| ESLint | Code linting |
+
+### DevOps & Infrastructure
+| Công nghệ | Mục đích |
+|-----------|----------|
+| Docker + Docker Compose | Containerization & local orchestration |
+| GitHub Actions | CI/CD pipeline (lint → test → build → push → scan) |
+| GitHub Container Registry (GHCR) | Docker image registry |
+| Trivy | Container vulnerability scanning |
+| SonarCloud | Code quality & coverage analysis |
+| Prometheus | Metrics collection |
+| Grafana | Metrics visualization |
+| Terraform | Infrastructure as Code (Cloudflare DNS) |
+| Uptime Kuma | Uptime monitoring |
 
 ---
 
@@ -68,12 +93,25 @@
 
 ```
 Project-Management/
-├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── ci.yml                  # GitHub Actions CI/CD pipeline
+├── infrastructure/                 # Terraform IaC (Cloudflare DNS)
+│   ├── main.tf
+│   ├── provider.tf
+│   ├── variables.tf
+│   └── README.md
 ├── backend/                        # Backend (Node.js + Express)
 │   ├── index.js                    # Express server entry point
+│   ├── Dockerfile                  # Optimized Docker image (Alpine)
+│   ├── .dockerignore
+│   ├── .env                        # Local env
 │   ├── .env.example                # Environment variables template
-│   ├── railway.toml                # Railway deployment config
+│   ├── .env.docker                 # Docker local env
+│   ├── .env.docker.example         # Docker env template
 │   ├── package.json
+│   ├── jest.config.mjs             # Jest test config
+│   ├── eslint.config.mjs
 │   ├── controllers/                # Route handlers
 │   │   ├── auth-controller.js      # Authentication (register, login, verify, reset)
 │   │   ├── workspace-controller.js # Workspace CRUD + invites + stats
@@ -99,13 +137,31 @@ Project-Management/
 │   │   └── user.js
 │   ├── middleware/
 │   │   └── auth-middleware.js      # JWT verification
-│   └── libs/
-│       ├── index.js                # Activity recording helper
-│       ├── send-email.js           # SendGrid wrapper
-│       ├── arcjet.js               # Arcjet security config
-│       └── validate-schema.js      # Zod schemas
+│   ├── libs/
+│   │   ├── index.js                # Activity recording helper
+│   │   ├── send-email.js           # SendGrid wrapper
+│   │   ├── arcjet.js               # Arcjet security config
+│   │   ├── validate-schema.js      # Zod schemas
+│   │   ├── logger.js               # Winston logger
+│   │   └── metrics.js              # Prometheus metrics
+│   └── __tests__/                  # Jest tests
+│       ├── setup.test.js
+│       └── health.test.js
 │
 ├── frontend/                       # Frontend (React Router + Vite)
+│   ├── Dockerfile                  # Multi-stage Docker image
+│   ├── .dockerignore
+│   ├── .env                        # Local env
+│   ├── .env.example
+│   ├── .env.docker                 # Docker local env
+│   ├── .env.docker.example
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── react-router.config.ts
+│   ├── vitest.config.ts            # Vitest test config
+│   ├── vitest.setup.ts
+│   ├── eslint.config.mjs
 │   ├── app/
 │   │   ├── root.tsx                # Root layout
 │   │   ├── app.css
@@ -131,14 +187,18 @@ Project-Management/
 │   │   ├── provider/
 │   │   │   ├── auth-context.tsx    # Auth state management
 │   │   │   └── react-query-provider.tsx
-│   │   └── types/
-│   │       └── index.ts            # TypeScript interfaces
-│   ├── public/
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   ├── react-router.config.ts
-│   ├── railway.toml
-│   └── package.json
+│   │   ├── types/
+│   │   │   └── index.ts            # TypeScript interfaces
+│   │   └── components/__tests__/   # Vitest component tests
+│   └── public/
+│       ├── favicon.ico
+│       └── dashboard-preview.png
+│
+├── docker-compose.yml              # Full stack: BE + FE + MongoDB + Prometheus + Grafana
+├── prometheus.yml                  # Prometheus scrape config
+├── sonar-project.properties        # SonarCloud config
+├── DEVOPS_PLAN.md                # DevOps implementation plan (internal)
+└── README.md                     # This file
 ```
 
 ---
@@ -147,18 +207,66 @@ Project-Management/
 
 ### Yêu cầu hệ thống / Prerequisites
 - **Node.js** >= 20.0.0
-- **MongoDB** (local hoặc MongoDB Atlas)
+- **Docker & Docker Compose** (khuyến nghị — chạy full stack nhanh nhất)
+- **MongoDB** (nếu chạy manual — local hoặc MongoDB Atlas)
 - **SendGrid account** (để gửi email xác thực / for sending verification emails)
 - **Arcjet account** (bảo mật / for security)
 
-### 1. Clone repository
+---
+
+### 🔥 Cách 1: Docker Compose (Khuyến nghị) / Method 1: Docker Compose (Recommended)
+
+Chạy toàn bộ stack — MongoDB, Backend, Frontend, Prometheus, Grafana — chỉ với 1 lệnh:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/Project-Management.git
+cd Project-Management
+
+# 2. Copy env files
+cp backend/.env.docker.example backend/.env.docker
+cp frontend/.env.docker.example frontend/.env.docker
+
+# 3. Edit backend/.env.docker with your real credentials:
+#    JWT_SECRET=your-jwt-secret
+#    SEND_GRID_API=your-sendgrid-api-key
+#    FROM_EMAIL=your-email@example.com
+#    ARCJET_KEY=your-arcjet-key
+
+# 4. Start everything
+docker-compose up --build
+
+# 5. Run in background
+docker-compose up --build -d
+
+# 6. Stop everything
+docker-compose down
+
+# 7. Stop and remove volumes
+docker-compose down -v
+```
+
+**Sau khi chạy / After running:**
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:5000 |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3002 (admin/admin) |
+| MongoDB | localhost:27017 |
+
+---
+
+### ⚙️ Cách 2: Cài đặt thủ công / Method 2: Manual Setup
+
+#### 1. Clone repository
 
 ```bash
 git clone https://github.com/your-username/Project-Management.git
 cd Project-Management
 ```
 
-### 2. Cài đặt Backend / Setup Backend
+#### 2. Cài đặt Backend / Setup Backend
 
 ```bash
 cd backend
@@ -194,7 +302,7 @@ npm start         # Production
 
 Backend chạy tại / Backend runs at: `http://localhost:5000`
 
-### 3. Cài đặt Frontend / Setup Frontend
+#### 3. Cài đặt Frontend / Setup Frontend
 
 ```bash
 cd ../frontend
@@ -224,18 +332,53 @@ npm start         # Production server (SSR)
 
 Frontend chạy tại / Frontend runs at: `http://localhost:5173`
 
-### 4. Kiểm tra build / Verify build
+---
+
+### 🧪 4. Kiểm tra build & test / Verify build & test
+
+**Backend:**
 
 ```bash
-# Frontend
+cd backend
+npm run lint        # ESLint
+npm test            # Jest with coverage
+npm start           # Start server
+```
+
+**Frontend:**
+
+```bash
 cd frontend
+npm run lint        # ESLint
+npm test            # Vitest
 npm run typecheck   # TypeScript type checking
 npm run build       # Production build
-
-# Backend (no build step needed)
-cd backend
-node index.js       # or npm start
 ```
+
+**Docker:**
+
+```bash
+# Build images locally
+docker build -t taskmanager-be:test ./backend
+docker build -t taskmanager-fe:test --build-arg VITE_API_URL=http://localhost:5000/api-v1 ./frontend
+
+# Check image sizes
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+```
+
+---
+
+## 🧪 Testing
+
+| | Backend | Frontend |
+|---|---------|----------|
+| **Framework** | Jest | Vitest |
+| **Config** | `backend/jest.config.mjs` | `frontend/vitest.config.ts` |
+| **Tests** | `backend/__tests__/` | `frontend/app/components/__tests__/` |
+| **Run** | `npm test` | `npm test` |
+| **Coverage** | `backend/coverage/` | Console output |
+
+Backend hiện có test cho health check và module setup. Frontend có test cho các UI components.
 
 ---
 
@@ -289,7 +432,7 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
 | PUT | `/:taskId` | Cập nhật task / Update task |
 | PUT | `/:taskId/status` | Cập nhật trạng thái / Update status |
 | PUT | `/:taskId/priority` | Cập nhật ưu tiên / Update priority |
-| PUT | `/:taskId/assignees` | Cập nhật ngườiphụ trách / Update assignees |
+| PUT | `/:taskId/assignees` | Cập nhật người phụ trách / Update assignees |
 | POST | `/:taskId/watch` | Theo dõi / bỏ theo dõi / Toggle watch |
 | POST | `/:taskId/archive` | Lưu trữ / bỏ lưu trữ / Toggle archive |
 | POST | `/:taskId/add-subtask` | Thêm subtask / Add subtask |
@@ -298,6 +441,11 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
 | POST | `/:taskId/comments` | Thêm bình luận / Add comment |
 | GET | `/:taskId/comments` | Danh sách bình luận / Get comments |
 | DELETE | `/comments/:commentId` | Xóa bình luận / Delete comment |
+
+### Metrics
+| Method | Endpoint | Mô tả / Description |
+|--------|----------|---------------------|
+| GET | `/metrics` | Prometheus metrics (request count, latency, memory, event loop lag) |
 
 ---
 
@@ -411,14 +559,14 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
 ## 🔐 Authentication Flow
 
 1. **Đăng ký / Register**
-   - Ngườidùng nhập name, email, password
+   - Người dùng nhập name, email, password
    - Arcjet kiểm tra email hợp lệ (chặn email rác / disposable)
    - Mật khẩu được hash bằng bcrypt
    - Tạo JWT verification token (hạn 1 giờ)
    - Gửi email xác thực qua SendGrid
 
 2. **Xác thực email / Verify Email**
-   - Ngườidùng click link trong email
+   - Người dùng click link trong email
    - Frontend gọi API verify với token
    - Backend xác nhận token và cập nhật `isEmailVerified: true`
 
@@ -439,41 +587,82 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
 
 ---
 
+## 🔄 CI/CD Pipeline
+
+Pipeline chạy tự động trên GitHub Actions mỗi khi push lên `main`/`develop` hoặc tạo PR vào `main`.
+
+| Job | Mô tả |
+|-----|-------|
+| `lint-backend` | ESLint backend |
+| `lint-frontend` | ESLint frontend |
+| `test-backend` | Jest + coverage upload |
+| `test-frontend` | Vitest |
+| `sonarcloud` | Code quality scan |
+| `build-and-push` | Build Docker images → push GHCR |
+| `trivy-scan` | CVE scan images |
+
+Images được push lên: `ghcr.io/dinhkhachoang3009/taskmanager-be` và `ghcr.io/dinhkhachoang3009/taskmanager-fe`
+
+---
+
+## 📊 Monitoring & Observability
+
+### Winston Logging
+Backend sử dụng Winston để ghi log JSON có cấu trúc:
+```json
+{"level":"info","message":"Server is running on port 5000","timestamp":"2026-06-23T10:00:00.000Z"}
+```
+- Tự động log unhandled errors
+- Log levels: `info`, `warn`, `error`
+
+### Prometheus Metrics
+Endpoint `/metrics` cung cấp các metric:
+- `http_requests_total` — Số request
+- `http_request_duration_seconds` — Latency histogram
+- `process_resident_memory_bytes` — Memory usage
+- `nodejs_eventloop_lag_seconds` — Event loop lag
+
+### Grafana Dashboard
+- URL: http://localhost:3002 (khi chạy Docker Compose)
+- Login: `admin` / `admin`
+- Data Source: Prometheus (`http://prometheus:9090`)
+
+Ví dụ PromQL queries:
+```promql
+rate(http_requests_total[1m])                                    # Request rate
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))  # P95 latency
+process_resident_memory_bytes                                    # Memory usage
+```
+
+### Uptime Kuma
+Dùng để ping API liên tục và nhận alert khi service down.
+
+---
+
 ## 🌍 Deployment
 
-Dự án được cấu hình deploy trên **Railway** thông qua file `railway.toml`.
+### Railway (Production)
+Dự án được triển khai trên **Railway** sử dụng **Dockerfile** (auto-detect).
 
-**Backend:**
-```toml
-[build]
-builder = "nixpacks"
+- **Frontend:** `https://taskmanager.qzz.io`
+- **Backend API:** `https://api.taskmanager.qzz.io`
 
-[deploy]
-startCommand = "npm start"
-healthcheckPath = "/"
-healthcheckTimeout = 100
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+### Infrastructure as Code (Terraform)
+DNS records trên Cloudflare được quản lý bằng Terraform trong thư mục `infrastructure/`.
+
+```bash
+cd infrastructure
+$env:CLOUDFLARE_API_TOKEN = "your-token"
+terraform init
+terraform plan
+terraform apply
 ```
-
-**Frontend:**
-```toml
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "npm start"
-```
-
-- Backend chạy trên port `process.env.PORT || 5000`
-- Frontend chạy SSR với `react-router-serve`
-- Cả hai đều sử dụng **Nixpacks** builder
 
 ---
 
 ## 📝 Biến Môi Trường / Environment Variables
 
-### Backend (`backend/.env`)
+### Backend Local (`backend/.env`)
 | Biến | Mô tả |
 |------|-------|
 | `PORT` | Port server (default: 5000) |
@@ -485,7 +674,24 @@ startCommand = "npm start"
 | `ARCJET_KEY` | API key Arcjet |
 | `ARCJET_ENV` | Môi trường Arcjet (development / production) |
 
-### Frontend (`frontend/.env`)
+### Backend Docker (`backend/.env.docker`)
+| Biến | Mô tả |
+|------|-------|
+| `PORT` | 5000 |
+| `MONGO_URI` | `mongodb://mongo:27017/taskmanager` (Docker network) |
+| `FRONTEND_URL` | `http://localhost:3000` |
+| `JWT_SECRET` | Your secret |
+| `SEND_GRID_API` | Your SendGrid key |
+| `FROM_EMAIL` | Your email |
+| `ARCJET_KEY` | Your Arcjet key |
+| `ARCJET_ENV` | development |
+
+### Frontend Local (`frontend/.env`)
+| Biến | Mô tả |
+|------|-------|
+| `VITE_API_URL` | URL backend API (e.g., `http://localhost:5000/api-v1`) |
+
+### Frontend Docker (`frontend/.env.docker`)
 | Biến | Mô tả |
 |------|-------|
 | `VITE_API_URL` | URL backend API (e.g., `http://localhost:5000/api-v1`) |
