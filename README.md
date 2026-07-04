@@ -587,6 +587,42 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
 
 ---
 
+## 🔄 DevOps Workflow / Quy trình DevOps
+
+Dưới đây là toàn bộ quy trình DevOps của TaskManager — từ lúc developer sửa code local cho đến khi ứng dụng được triển khai production và giám sát liên tục.
+
+> Below is the complete TaskManager DevOps workflow — from local development all the way to production deployment and continuous monitoring.
+
+```mermaid
+flowchart TD
+    A["👨‍💻 Developer sửa code / Code locally"] --> B["📝 Commit & Push to GitHub"]
+    B --> C["⚡ GitHub Actions Trigger"]
+    C --> D["🔍 Lint Backend & Frontend"]
+    D --> E["🧪 Run Tests"]
+    E --> F["🔐 Security Scan<br/>SonarCloud + Trivy"]
+    F --> G{"✅ PASS?"}
+    G -->|No / Không| H["❌ Pipeline Failed<br/>Block & Notify"]
+    G -->|Yes / Có| I["🐳 Build Docker Images"]
+    I --> J["📦 Push to GHCR"]
+    J --> K["🚀 Railway Auto-Deploy"]
+    K --> L["🌐 Cloudflare DNS<br/>taskmanager.qzz.io"]
+    L --> M["📊 Monitoring & Alerting<br/>Prometheus / Grafana / Uptime Kuma"]
+```
+
+### Giải thích nhanh / Quick explanation
+
+| Bước / Step | Mô tả / Description |
+|-------------|---------------------|
+| **1. Local Dev** | Developer chạy code local bằng Docker Compose hoặc manual setup / Developer runs code locally with Docker Compose or manual setup |
+| **2. Git Push** | Push lên `main`, `develop` hoặc tạo PR / Push to branches or open PR |
+| **3. CI Pipeline** | GitHub Actions chạy lint, test, security scan / GitHub Actions runs lint, test, and security scan |
+| **4. Build & Push** | Nếu PASS → build Docker image và push lên GHCR / If passed, build Docker images and push to GHCR |
+| **5. CD / Deploy** | Railway tự động deploy từ code/image mới / Railway auto-deploys from the latest code/image |
+| **6. DNS** | Cloudflare DNS được quản lý bằng Terraform / Cloudflare DNS managed by Terraform |
+| **7. Monitoring** | Theo dõi uptime, metrics, logs qua Uptime Kuma, Prometheus, Grafana / Monitor uptime, metrics, and logs |
+
+---
+
 ## 🔄 CI/CD Pipeline
 
 Pipeline chạy tự động trên GitHub Actions mỗi khi push lên `main`/`develop` hoặc tạo PR vào `main`.
