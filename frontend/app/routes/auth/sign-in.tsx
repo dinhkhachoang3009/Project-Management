@@ -20,7 +20,7 @@ import { useLoginMutation } from "@/hooks/use-auth";
 import { signInSchema } from "@/lib/schema";
 import { useAuth } from "@/provider/auth-context";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -58,6 +58,15 @@ const SignIn = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="max-w-md w-full shadow-xl">
+        <div className="pt-4 px-6">
+          <Link
+            to="/"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back
+          </Link>
+        </div>
         <CardHeader className="text-center mb-5">
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
@@ -122,7 +131,10 @@ const SignIn = () => {
           <CardFooter className="flex items-center justify-center mt-6">
             <div className="flex items-center justify-center">
               <p className="text-sm text-muted-foreground">
-                Don&apos;t have an account? <Link to="/sign-up">Sign up</Link>
+                Don&apos;t have an account?{" "}
+                <Link to="/sign-up" className="text-blue-600">
+                  Sign up
+                </Link>
               </p>
             </div>
           </CardFooter>
