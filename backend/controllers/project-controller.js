@@ -16,13 +16,19 @@ const createProject = async (req, res) => {
       });
     }
 
-    const isMember = workspace.members.some(
+    const userWorkspaceRole = workspace.members.find(
       (member) => member.user.toString() === req.user._id.toString()
-    );
+    )?.role;
 
-    if (!isMember) {
+    if (!userWorkspaceRole) {
       return res.status(403).json({
         message: "You are not a member of this workspace",
+      });
+    }
+
+    if (userWorkspaceRole === "viewer") {
+      return res.status(403).json({
+        message: "Viewers cannot create projects",
       });
     }
 
@@ -111,13 +117,19 @@ const updateProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const isMember = project.members.some(
+    const userProjectRole = project.members.find(
       (member) => member.user.toString() === req.user._id.toString()
-    );
+    )?.role;
 
-    if (!isMember) {
+    if (!userProjectRole) {
       return res.status(403).json({
         message: "You are not a member of this project",
+      });
+    }
+
+    if (userProjectRole !== "manager") {
+      return res.status(403).json({
+        message: "Only project managers can update project details",
       });
     }
 

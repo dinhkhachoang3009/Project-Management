@@ -12,9 +12,10 @@ import { toast } from "sonner";
 
 interface TaskCardProps {
   task: Task;
+  readOnly?: boolean;
 }
 
-export const TaskCard = ({ task }: TaskCardProps) => {
+export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
   const navigate = useNavigate();
   const { workspaceId } = useParams();
   const { mutate: updateStatus } = useUpdateTaskStatus();
@@ -54,41 +55,43 @@ export const TaskCard = ({ task }: TaskCardProps) => {
             {task.priority}
           </Badge>
 
-          <div className="flex gap-1">
-            {task.status !== "To Do" && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-6"
-                onClick={(e) => handleStatusChange(e, "To Do")}
-                title="Mark as To Do"
-              >
-                <AlertCircle className="size-4" />
-              </Button>
-            )}
-            {task.status !== "In Progress" && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-6"
-                onClick={(e) => handleStatusChange(e, "In Progress")}
-                title="Mark as In Progress"
-              >
-                <Clock className="size-4" />
-              </Button>
-            )}
-            {task.status !== "Done" && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-6"
-                onClick={(e) => handleStatusChange(e, "Done")}
-                title="Mark as Done"
-              >
-                <CheckCircle className="size-4" />
-              </Button>
-            )}
-          </div>
+          {!readOnly && (
+            <div className="flex gap-1">
+              {task.status !== "To Do" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={(e) => handleStatusChange(e, "To Do")}
+                  title="Mark as To Do"
+                >
+                  <AlertCircle className="size-4" />
+                </Button>
+              )}
+              {task.status !== "In Progress" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={(e) => handleStatusChange(e, "In Progress")}
+                  title="Mark as In Progress"
+                >
+                  <Clock className="size-4" />
+                </Button>
+              )}
+              {task.status !== "Done" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={(e) => handleStatusChange(e, "Done")}
+                  title="Mark as Done"
+                >
+                  <CheckCircle className="size-4" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </CardHeader>
 

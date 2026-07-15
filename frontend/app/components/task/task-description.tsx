@@ -8,9 +8,11 @@ import { toast } from "sonner";
 export const TaskDescription = ({
   description,
   taskId,
+  readOnly,
 }: {
   description: string;
   taskId: string;
+  readOnly?: boolean;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newDescription, setNewDescription] = useState(description || "");
@@ -52,10 +54,12 @@ export const TaskDescription = ({
           <p className="text-sm text-muted-foreground flex-1">
             {description || "No description"}
           </p>
-          <Edit
-            className="size-4 cursor-pointer text-muted-foreground hover:text-foreground shrink-0"
-            onClick={() => setIsEditing(true)}
-          />
+          {!readOnly && (
+            <Edit
+              className="size-4 cursor-pointer text-muted-foreground hover:text-foreground shrink-0"
+              onClick={() => setIsEditing(true)}
+            />
+          )}
         </div>
       )}
     </div>

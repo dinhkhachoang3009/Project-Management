@@ -3,19 +3,26 @@ import Task from "../models/task.js";
 import ActivityLog from "../models/activity.js";
 import { recordActivity } from "../libs/index.js";
 
-const checkTaskPermission = async (taskId, userId) => {
+const checkTaskPermission = async (taskId, userId, allowedRoles) => {
   const task = await Task.findById(taskId);
   if (!task) return { error: "Task not found", status: 404 };
 
   const project = await Project.findById(task.project);
   if (!project) return { error: "Project not found", status: 404 };
 
-  const isMember = project.members.some(
+  const userRole = project.members.find(
     (member) => member.user.toString() === userId.toString()
-  );
+  )?.role;
 
-  if (!isMember) {
+  if (!userRole) {
     return { error: "You are not a member of this project", status: 403 };
+  }
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return {
+      error: "You do not have permission to perform this action",
+      status: 403,
+    };
   }
 
   return { task, project, error: null };
@@ -32,13 +39,19 @@ const createTask = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const isMember = project.members.some(
+    const userRole = project.members.find(
       (member) => member.user.toString() === req.user._id.toString()
-    );
+    )?.role;
 
-    if (!isMember) {
+    if (!userRole) {
       return res.status(403).json({
         message: "You are not a member of this project",
+      });
+    }
+
+    if (userRole === "viewer") {
+      return res.status(403).json({
+        message: "Viewers cannot create tasks",
       });
     }
 
@@ -157,7 +170,8 @@ const updateTaskTitle = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -185,7 +199,8 @@ const updateTaskDescription = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -213,7 +228,8 @@ const updateTask = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -243,7 +259,8 @@ const updateTaskStatus = async (req, res) => {
 
     const { task, error, status: statusCode } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(statusCode).json({ message: error });
 
@@ -272,7 +289,8 @@ const updateTaskPriority = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -300,7 +318,8 @@ const updateTaskAssignees = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -357,7 +376,8 @@ const achieveTask = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -404,7 +424,8 @@ const addSubTask = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 
@@ -435,7 +456,8 @@ const updateSubTask = async (req, res) => {
 
     const { task, error, status } = await checkTaskPermission(
       taskId,
-      req.user._id
+      req.user._id,
+      ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
 

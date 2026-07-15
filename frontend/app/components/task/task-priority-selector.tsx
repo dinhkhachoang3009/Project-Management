@@ -12,9 +12,11 @@ import { toast } from "sonner";
 export const TaskPrioritySelector = ({
   priority,
   taskId,
+  readOnly,
 }: {
   priority: TaskPriority;
   taskId: string;
+  readOnly?: boolean;
 }) => {
   const { mutate } = useUpdateTaskPriority();
 
@@ -27,6 +29,14 @@ export const TaskPrioritySelector = ({
       }
     );
   };
+
+  if (readOnly) {
+    return (
+      <span className="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium w-[140px]">
+        {priority}
+      </span>
+    );
+  }
 
   return (
     <Select value={priority} onValueChange={handleChange}>

@@ -12,9 +12,11 @@ import { toast } from "sonner";
 export const TaskStatusSelector = ({
   status,
   taskId,
+  readOnly,
 }: {
   status: TaskStatus;
   taskId: string;
+  readOnly?: boolean;
 }) => {
   const { mutate } = useUpdateTaskStatus();
 
@@ -27,6 +29,14 @@ export const TaskStatusSelector = ({
       }
     );
   };
+
+  if (readOnly) {
+    return (
+      <span className="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium w-[140px]">
+        {status}
+      </span>
+    );
+  }
 
   return (
     <Select value={status} onValueChange={handleChange}>

@@ -10,10 +10,12 @@ export const TaskAssigneesSelector = ({
   taskId,
   assignees,
   projectMembers,
+  readOnly,
 }: {
   taskId: string;
   assignees: User[];
   projectMembers: { user: User; role: string }[];
+  readOnly?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const { mutate } = useUpdateTaskAssignees();
@@ -37,33 +39,41 @@ export const TaskAssigneesSelector = ({
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">Assignees</h3>
 
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start">
-            {assignees.length === 0
-              ? "Select assignees"
-              : `${assignees.length} assignee${assignees.length > 1 ? "s" : ""}`}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64">
-          <div className="space-y-2">
-            {projectMembers.map((member) => (
-              <div
-                key={member.user._id}
-                className="flex items-center space-x-2"
-              >
-                <Checkbox
-                  checked={assignees.some(
-                    (a) => a._id === member.user._id
-                  )}
-                  onCheckedChange={() => handleToggle(member.user._id)}
-                />
-                <span className="text-sm">{member.user.name}</span>
-              </div>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+      {readOnly ? (
+        <div className="text-sm">
+          {assignees.length === 0
+            ? "No assignees"
+            : assignees.map((a) => a.name).join(", ")}
+        </div>
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-full justify-start">
+              {assignees.length === 0
+                ? "Select assignees"
+                : `${assignees.length} assignee${assignees.length > 1 ? "s" : ""}`}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64">
+            <div className="space-y-2">
+              {projectMembers.map((member) => (
+                <div
+                  key={member.user._id}
+                  className="flex items-center space-x-2"
+                >
+                  <Checkbox
+                    checked={assignees.some(
+                      (a) => a._id === member.user._id
+                    )}
+                    onCheckedChange={() => handleToggle(member.user._id)}
+                  />
+                  <span className="text-sm">{member.user.name}</span>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 };

@@ -13,9 +13,11 @@ import { toast } from "sonner";
 export const SubTasksDetails = ({
   subTasks,
   taskId,
+  readOnly,
 }: {
   subTasks: Subtask[];
   taskId: string;
+  readOnly?: boolean;
 }) => {
   const [newSubTask, setNewSubTask] = useState("");
   const { mutate: addSubTask, isPending } = useAddSubTaskMutation();
@@ -72,7 +74,7 @@ export const SubTasksDetails = ({
                 onCheckedChange={(checked) =>
                   handleToggleTask(subTask._id, !!checked)
                 }
-                disabled={isUpdating}
+                disabled={readOnly || isUpdating}
               />
 
               <label
@@ -90,23 +92,25 @@ export const SubTasksDetails = ({
         )}
       </div>
 
-      <div className="flex">
-        <Input
-          placeholder="Add a sub task"
-          value={newSubTask}
-          onChange={(e) => setNewSubTask(e.target.value)}
-          className="mr-1"
-          disabled={isPending}
-          onKeyDown={(e) => e.key === "Enter" && handleAddSubTask()}
-        />
+      {!readOnly && (
+        <div className="flex">
+          <Input
+            placeholder="Add a sub task"
+            value={newSubTask}
+            onChange={(e) => setNewSubTask(e.target.value)}
+            className="mr-1"
+            disabled={isPending}
+            onKeyDown={(e) => e.key === "Enter" && handleAddSubTask()}
+          />
 
-        <Button
-          onClick={handleAddSubTask}
-          disabled={isPending || newSubTask.length === 0}
-        >
-          Add
-        </Button>
-      </div>
+          <Button
+            onClick={handleAddSubTask}
+            disabled={isPending || newSubTask.length === 0}
+          >
+            Add
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

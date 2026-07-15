@@ -16,6 +16,7 @@ import {
   useTaskByIdQuery,
   useWatchTaskMutation,
 } from "@/hooks/use-task";
+import { useUserProjectRole } from "@/hooks/use-project";
 import { useAuth } from "@/provider/auth-context";
 import type { Project, Task } from "@/types";
 import { formatDistanceToNow } from "date-fns";
@@ -56,6 +57,9 @@ const TaskDetails = () => {
   }
 
   const { task, project } = data;
+
+  const userRole = useUserProjectRole(project);
+  const isReadOnly = userRole === "viewer";
 
   const isUserWatching = task?.watchers?.some(
     (watcher) => watcher._id.toString() === user?._id?.toString()
@@ -116,14 +120,16 @@ const TaskDetails = () => {
             )}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAchievedTask}
-            disabled={isAchieved}
-          >
-            {task.isArchived ? "Unarchive" : "Archive"}
-          </Button>
+          {!isReadOnly && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAchievedTask}
+              disabled={isAchieved}
+            >
+              {task.isArchived ? "Unarchive" : "Archive"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -145,7 +151,7 @@ const TaskDetails = () => {
                   {task.priority} Priority
                 </Badge>
 
-                <TaskTitle title={task.title} taskId={task._id} />
+                <TaskTitle title={task.title} taskId={task._id} readOnly={isReadOnly} />
 
                 <div className="text-sm md:text-base text-muted-foreground">
                   Created:{" "}
@@ -156,7 +162,7 @@ const TaskDetails = () => {
               </div>
 
               <div className="flex items-center gap-2 mt-4 md:mt-0">
-                <TaskStatusSelector status={task.status} taskId={task._id} />
+                <TaskStatusSelector status={task.status} taskId={task._id} readOnly={isReadOnly} />
               </div>
             </div>
 
@@ -167,6 +173,7 @@ const TaskDetails = () => {
               <TaskDescription
                 description={task.description || ""}
                 taskId={task._id}
+                readOnly={isReadOnly}
               />
             </div>
 
@@ -178,6 +185,7 @@ const TaskDetails = () => {
                   user: m.user,
                   role: m.role,
                 })) || []}
+                readOnly={isReadOnly}
               />
             </div>
 
@@ -185,12 +193,14 @@ const TaskDetails = () => {
               <TaskPrioritySelector
                 priority={task.priority}
                 taskId={task._id}
+                readOnly={isReadOnly}
               />
             </div>
 
             <SubTasksDetails
               subTasks={task.subtasks || []}
               taskId={task._id}
+              readOnly={isReadOnly}
             />
           </div>
 

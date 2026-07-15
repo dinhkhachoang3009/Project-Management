@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectTasksQuery } from "@/hooks/use-task";
+import { useUserProjectRole } from "@/hooks/use-project";
 import { getProjectProgress } from "@/lib";
 import type { Project, Task, TaskStatus } from "@/types";
 import { useState } from "react";
@@ -28,6 +29,9 @@ const ProjectDetails = () => {
     };
     isLoading: boolean;
   };
+
+  const userRole = useUserProjectRole(data?.project);
+  const canCreateTask = userRole === "manager" || userRole === "contributor";
 
   if (isLoading) {
     return (
@@ -71,7 +75,9 @@ const ProjectDetails = () => {
             </span>
           </div>
 
-          <Button onClick={() => setIsCreateTask(true)}>Add Task</Button>
+          {canCreateTask && (
+            <Button onClick={() => setIsCreateTask(true)}>Add Task</Button>
+          )}
         </div>
       </div>
 
@@ -112,19 +118,19 @@ const ProjectDetails = () => {
           </div>
 
           <TabsContent value="all" className="m-0">
-            <TaskBoard tasks={filteredTasks} />
+            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
           </TabsContent>
 
           <TabsContent value="todo" className="m-0">
-            <TaskBoard tasks={filteredTasks} />
+            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
           </TabsContent>
 
           <TabsContent value="in-progress" className="m-0">
-            <TaskBoard tasks={filteredTasks} />
+            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
           </TabsContent>
 
           <TabsContent value="done" className="m-0">
-            <TaskBoard tasks={filteredTasks} />
+            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
           </TabsContent>
         </Tabs>
       </div>
@@ -138,21 +144,21 @@ const ProjectDetails = () => {
   );
 };
 
-const TaskBoard = ({ tasks }: { tasks: Task[] }) => {
+const TaskBoard = ({ tasks, readOnly }: { tasks: Task[]; readOnly?: boolean }) => {
   const todoTasks = tasks.filter((t) => t.status === "To Do");
   const inProgressTasks = tasks.filter((t) => t.status === "In Progress");
   const doneTasks = tasks.filter((t) => t.status === "Done");
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <TaskColumn title="To Do" tasks={todoTasks} />
-      <TaskColumn title="In Progress" tasks={inProgressTasks} />
-      <TaskColumn title="Done" tasks={doneTasks} />
+      <TaskColumn title="To Do" tasks={todoTasks} readOnly={readOnly} />
+      <TaskColumn title="In Progress" tasks={inProgressTasks} readOnly={readOnly} />
+      <TaskColumn title="Done" tasks={doneTasks} readOnly={readOnly} />
     </div>
   );
 };
 
-const TaskColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => {
+const TaskColumn = ({ title, tasks, readOnly }: { title: string; tasks: Task[]; readOnly?: boolean }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -166,7 +172,7 @@ const TaskColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => {
             No tasks yet
           </div>
         ) : (
-          tasks.map((task) => <TaskCard key={task._id} task={task} />)
+          tasks.map((task) => <TaskCard key={task._id} task={task} readOnly={readOnly} />)
         )}
       </div>
     </div>
