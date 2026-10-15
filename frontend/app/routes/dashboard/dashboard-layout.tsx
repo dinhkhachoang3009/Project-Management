@@ -5,8 +5,16 @@ import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import { fetchData } from "@/lib/fetch-util";
 import { useAuth } from "@/provider/auth-context";
 import type { Workspace } from "@/types";
-import { useState } from "react";
-import { Navigate, Outlet } from "react-router";
+import { useEffect, useState } from "react";
+import {
+  Navigate,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useMatches,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 
 export const clientLoader = async () => {
   try {
@@ -22,6 +30,50 @@ const DashboardLayout = () => {
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
     null
   );
+  const loaderData = useLoaderData() as { workspaces: Workspace[] } | undefined;
+  const workspaces = loaderData?.workspaces || [];
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const matches = useMatches();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (workspaces.length === 0) return;
+    const paramId = searchParams.get("workspaceId");
+    const pathId =
+      matches.find((m) => m.params.workspaceId)?.params.workspaceId ?? null;
+    const id = paramId || pathId;
+    const lastWorkspaceId = localStorage.getItem("lastWorkspaceId");
+
+    if (id) {
+      const workspace = workspaces.find((ws) => ws._id === id);
+      if (!workspace) {
+        if (lastWorkspaceId === id) {
+          localStorage.removeItem("lastWorkspaceId");
+        }
+        return;
+      }
+      localStorage.setItem("lastWorkspaceId", id);
+      if (currentWorkspace?._id !== id) {
+        setCurrentWorkspace(workspace);
+      }
+      return;
+    }
+
+    if (location.pathname === "/dashboard" && lastWorkspaceId) {
+      const workspace = workspaces.find((ws) => ws._id === lastWorkspaceId);
+      if (workspace) {
+        navigate(`/dashboard?workspaceId=${lastWorkspaceId}`, {
+          replace: true,
+        });
+        if (currentWorkspace?._id !== lastWorkspaceId) {
+          setCurrentWorkspace(workspace);
+        }
+      } else {
+        localStorage.removeItem("lastWorkspaceId");
+      }
+    }
+  }, [searchParams, matches, workspaces, currentWorkspace, location.pathname]);
 
   if (isLoading) {
     return <Loader />;

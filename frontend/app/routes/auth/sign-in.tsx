@@ -46,7 +46,12 @@ const SignIn = () => {
       onSuccess: (data) => {
         login(data);
         toast.success("Login successful");
-        navigate("/dashboard");
+        const lastWorkspaceId = localStorage.getItem("lastWorkspaceId");
+        navigate(
+          lastWorkspaceId
+            ? `/dashboard?workspaceId=${lastWorkspaceId}`
+            : "/dashboard"
+        );
       },
       onError: (error: any) => {
         const errorMessage =
