@@ -7,3 +7,6 @@ node_modules/
 dist/
 build/
 coverage/
+
+# Local opencode config
+Opencode-Linux/

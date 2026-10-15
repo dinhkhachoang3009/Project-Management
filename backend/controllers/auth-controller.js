@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const decision = await aj.protect(req, { email });
+    const decision = await aj.protect(req, { email, requested: 1 });
 
     if (decision.isDenied()) {
       res.writeHead(403, { "Content-Type": "application/json" });
@@ -52,6 +52,8 @@ const registerUser = async (req, res) => {
 
     const isEmailSent = await sendEmail(email, emailSubject, emailBody);
     if (!isEmailSent) {
+      await Verification.deleteMany({ userId: newUser._id });
+      await User.findByIdAndDelete(newUser._id);
       return res
         .status(500)
         .json({ message: "Failed to send verification email" });

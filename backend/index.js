@@ -26,14 +26,21 @@ app.use(
 );
 
 //db connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
+const connectDB = async (attempt = 0) => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
     logger.info("Connected to MongoDB");
-  })
-  .catch((err) => {
-    logger.error("Failed to connect to MongoDB", { error: err.message });
-  });
+  } catch (err) {
+    logger.error("Failed to connect to MongoDB", {
+      error: err.message,
+      attempt: attempt + 1,
+    });
+    const delay = Math.min(5000 * (attempt + 1), 30000);
+    setTimeout(() => connectDB(attempt + 1), delay);
+  }
+};
+
+connectDB();
 
 app.use(express.json());
 
