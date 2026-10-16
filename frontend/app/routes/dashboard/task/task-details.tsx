@@ -40,6 +40,8 @@ const TaskDetails = () => {
   const { mutate: achievedTask, isPending: isAchieved } =
     useAchievedTaskMutation();
 
+  const userRole = useUserProjectRole(data?.project);
+
   if (isLoading) {
     return (
       <div>
@@ -58,7 +60,6 @@ const TaskDetails = () => {
 
   const { task, project } = data;
 
-  const userRole = useUserProjectRole(project);
   const isReadOnly = userRole === "viewer";
 
   const isUserWatching = task?.watchers?.some(
