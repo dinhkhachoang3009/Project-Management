@@ -1,14 +1,4 @@
 services:
-  mongo:
-    image: mongo:7
-    container_name: taskmanager-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_DATABASE: taskmanager
-
   backend:
     build: ./backend
     container_name: taskmanager-backend
@@ -16,8 +6,6 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/.env.docker
-    depends_on:
-      - mongo
     restart: unless-stopped
 
   frontend:
@@ -59,6 +47,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  mongo-data:
   prometheus-data:
   grafana-data:
