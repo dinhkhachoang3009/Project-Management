@@ -135,7 +135,7 @@ const TaskDetails = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:flex-[2]">
+        <div className="lg:flex-2">
           <div className="bg-card rounded-lg p-6 shadow-sm mb-6">
             <div className="flex flex-col md:flex-row justify-between items-start mb-4">
               <div>
