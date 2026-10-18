@@ -4,14 +4,14 @@ import { inviteMemberSchema } from "@/lib/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Mail } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { useInviteMemberMutation } from "@/hooks/use-workspace";
+import { useInviteMemberMutation, useGenerateInviteLinkMutation } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 
 interface InviteMemberDialogProps {
@@ -30,6 +30,7 @@ export const InviteMemberDialog = ({
 }: InviteMemberDialogProps) => {
   const [inviteTab, setInviteTab] = useState("email");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const form = useForm<InviteMemberFormData>({
     resolver: zodResolver(inviteMemberSchema),
@@ -40,6 +41,58 @@ export const InviteMemberDialog = ({
   });
 
   const { mutate, isPending } = useInviteMemberMutation();
+  const {
+    mutate: generateInviteLink,
+    isPending: isGeneratingLink,
+  } = useGenerateInviteLinkMutation();
+
+  // fresh link state when the dialog is bound to a different workspace
+  useEffect(() => {
+    setInviteLink(null);
+  }, [workspaceId]);
+
+  // generate the token-gated link when the Share Link tab is first viewed.
+  // The backend reuses the active link until it expires, so an admin can
+  // re-open the dialog anywhere without silently revoking a shared link.
+  useEffect(() => {
+    if (inviteTab === "link" && isOpen && !inviteLink && workspaceId) {
+      generateInviteLink(
+        { workspaceId, role: "member" },
+        {
+          onSuccess: (res: any) => setInviteLink(res.link),
+          onError: (error: any) => {
+            toast.error(
+              error?.response?.data?.message ??
+                "Failed to create invite link",
+            );
+            setInviteTab("email");
+          },
+        },
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inviteTab, isOpen, inviteLink, workspaceId]);
+
+  const handleRegenerateLink = () => {
+    if (!workspaceId) return;
+
+    generateInviteLink(
+      { workspaceId, role: "member", regenerate: true },
+      {
+        onSuccess: (res: any) => {
+          setInviteLink(res.link);
+          toast.info(
+            "New link generated — the previous link no longer works."
+          );
+        },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.message ?? "Failed to create invite link",
+          );
+        },
+      },
+    );
+  };
 
   const onSubmit = async (data: InviteMemberFormData) => {
     if (!workspaceId) return;
@@ -64,10 +117,10 @@ export const InviteMemberDialog = ({
     );
   };
 
-  const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText(
-      `${window.location.origin}/workspace-invite/${workspaceId}`
-    );
+  const handleCopyInviteLink = async () => {
+    if (!inviteLink) return;
+
+    await navigator.clipboard.writeText(inviteLink);
     setLinkCopied(true);
 
     setTimeout(() => {
@@ -177,9 +230,12 @@ export const InviteMemberDialog = ({
                 <div className="flex items-center space-x-2">
                   <Input
                     readOnly
-                    value={`${window.location.origin}/workspace-invite/${workspaceId}`}
+                    value={inviteLink ?? "Generating link..."}
                   />
-                  <Button onClick={handleCopyInviteLink} disabled={isPending}>
+                  <Button
+                    onClick={handleCopyInviteLink}
+                    disabled={isGeneratingLink || !inviteLink}
+                  >
                     {linkCopied ? (
                       <>
                         <Check className="mr-2 h-4 w-4" />
@@ -195,8 +251,17 @@ export const InviteMemberDialog = ({
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Anyone with the link can join this workspace
+                Link is valid for 7 days and can be reused until it expires.
+                Regenerate only if you want to expire the current link.
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateLink}
+                disabled={isGeneratingLink || !inviteLink}
+              >
+                Regenerate link
+              </Button>
             </div>
           </TabsContent>
         </Tabs>

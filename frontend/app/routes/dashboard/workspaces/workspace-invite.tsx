@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { WorkspaceAvatar } from "@/components/workspace/workspace-avatar";
 import {
-  useAcceptGenerateInviteMutation,
   useAcceptInviteByTokenMutation,
   useGetWorkspaceDetailsQuery,
 } from "@/hooks/use-workspace";
@@ -31,6 +30,8 @@ const WorkspaceInvite = () => {
     return <div>Workspace not found</div>;
   }
 
+  // details may 403 for non-members (that is correct now) — the join flow
+  // must not depend on member-only data; identity is shown when available
   const { data: workspace, isLoading } = useGetWorkspaceDetailsQuery(
     workspaceId!
   ) as { data: Workspace; isLoading: boolean };
@@ -40,35 +41,18 @@ const WorkspaceInvite = () => {
     isPending: isAcceptInviteByTokenPending,
   } = useAcceptInviteByTokenMutation();
 
-  const {
-    mutate: acceptGenerateInvite,
-    isPending: isAcceptGenerateInvitePending,
-  } = useAcceptGenerateInviteMutation();
-
   const handleAcceptInvite = () => {
-    if (!workspaceId) return;
+    if (!workspaceId || !token) return;
 
-    if (token) {
-      acceptInviteByToken(token, {
-        onSuccess: () => {
-          toast.success("Invitation accepted");
-          navigate(`/workspaces/${workspaceId}`);
-        },
-        onError: (error: any) => {
-          toast.error(error.response.data.message);
-        },
-      });
-    } else {
-      acceptGenerateInvite(workspaceId, {
-        onSuccess: () => {
-          toast.success("Invitation accepted");
-          navigate(`/workspaces/${workspaceId}`);
-        },
-        onError: (error: any) => {
-          toast.error(error.response.data.message);
-        },
-      });
-    }
+    acceptInviteByToken(token, {
+      onSuccess: () => {
+        toast.success("Invitation accepted");
+        navigate(`/workspaces/${workspaceId}`);
+      },
+      onError: (error: any) => {
+        toast.error(error.response.data.message);
+      },
+    });
   };
 
   const handleDeclineInvite = () => {
@@ -84,20 +68,51 @@ const WorkspaceInvite = () => {
     );
   }
 
-  if (!workspace) {
+  // no token at all = the old raw link, which is closed (decision D3)
+  const isInvalidInvite = !token;
+
+  if (isInvalidInvite || !workspace) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Card className="max-w-md">
+        <Card className={isInvalidInvite ? "max-w-md" : "max-w-md w-full"}>
           <CardHeader>
-            <CardTitle>Invalid Invitation</CardTitle>
+            <CardTitle>
+              {isInvalidInvite ? "Invalid Invitation" : "Join workspace"}
+            </CardTitle>
             <CardDescription>
-              This workspace invitation is invalid or has expired.
+              {isInvalidInvite
+                ? "This workspace invitation is invalid or has expired."
+                : "You've been invited to join this workspace."}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate("/workspaces")} className="w-full">
-              Go to Workspaces
-            </Button>
+            {isInvalidInvite ? (
+              <Button
+                onClick={() => navigate("/workspaces")}
+                className="w-full"
+              >
+                Go to Workspaces
+              </Button>
+            ) : (
+              <div className="flex gap-3">
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={handleAcceptInvite}
+                  disabled={isAcceptInviteByTokenPending}
+                >
+                  {isAcceptInviteByTokenPending ? "Joining..." : "Accept Invitation"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleDeclineInvite}
+                  disabled={isAcceptInviteByTokenPending}
+                >
+                  Decline
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -127,21 +142,15 @@ const WorkspaceInvite = () => {
               variant="default"
               className="flex-1"
               onClick={handleAcceptInvite}
-              disabled={
-                isAcceptInviteByTokenPending || isAcceptGenerateInvitePending
-              }
+              disabled={isAcceptInviteByTokenPending}
             >
-              {isAcceptInviteByTokenPending || isAcceptGenerateInvitePending
-                ? "Joining..."
-                : "Accept Invitation"}
+              {isAcceptInviteByTokenPending ? "Joining..." : "Accept Invitation"}
             </Button>
             <Button
               variant="outline"
               className="flex-1"
               onClick={handleDeclineInvite}
-              disabled={
-                isAcceptInviteByTokenPending || isAcceptGenerateInvitePending
-              }
+              disabled={isAcceptInviteByTokenPending}
             >
               Decline
             </Button>

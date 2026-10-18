@@ -53,9 +53,12 @@ export const useAcceptInviteByTokenMutation = () => {
   });
 };
 
-export const useAcceptGenerateInviteMutation = () => {
+export const useGenerateInviteLinkMutation = () => {
   return useMutation({
-    mutationFn: (workspaceId: string) =>
-      postData(`/workspaces/${workspaceId}/accept-generate-invite`, {}),
+    mutationFn: (data: {
+      workspaceId: string;
+      role?: string;
+      regenerate?: boolean;
+    }) => postData(`/workspaces/${data.workspaceId}/invite-link`, data),
   });
 };
