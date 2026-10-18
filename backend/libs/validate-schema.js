@@ -3,12 +3,10 @@ import { z } from "zod";
 const registerSchema = z.object({
   name: z.string().min(3, "Name is required"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(72, "Password must be at most 72 characters long"),
 });
 
 const verifyEmailSchema = z.object({
@@ -21,7 +19,27 @@ const emailSchema = z.object({
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token is required"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(72, "Password must be at most 72 characters long"),
+  confirmPassword: z.string().min(1, "Confirm password is required"),
+});
+
+// Deliberately NO .max(72) on loginSchema: bcrypt truncates to 72 bytes, so an
+// existing >72-char password still matches on login; bounding login would
+// lock such a user out with a 400 instead of logging them in.
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(72, "Password must be at most 72 characters long"),
   confirmPassword: z.string().min(1, "Confirm password is required"),
 });
 
@@ -38,6 +56,12 @@ const inviteMemberSchema = z.object({
 
 const tokenSchema = z.object({
   token: z.string().min(1, "Token is required"),
+});
+
+const inviteLinkSchema = z.object({
+  // link joiners must never be able to mint themselves an admin
+  role: z.enum(["member", "viewer"]).optional(),
+  regenerate: z.boolean().optional(),
 });
 
 const projectSchema = z.object({
@@ -63,8 +87,10 @@ export {
   verifyEmailSchema,
   emailSchema,
   resetPasswordSchema,
+  changePasswordSchema,
   workspaceSchema,
   inviteMemberSchema,
+  inviteLinkSchema,
   tokenSchema,
   projectSchema,
 };

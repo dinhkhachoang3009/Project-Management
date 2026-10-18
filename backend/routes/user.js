@@ -5,6 +5,7 @@ import {
   getUserProfile,
   updateUserProfile,
 } from "../controllers/user.js";
+import { changePasswordSchema } from "../libs/validate-schema.js";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
 
@@ -28,11 +29,7 @@ router.put(
   "/change-password",
   authMiddleware,
   validateRequest({
-    body: z.object({
-      currentPassword: z.string(),
-      newPassword: z.string(),
-      confirmPassword: z.string(),
-    }),
+    body: changePasswordSchema,
   }),
   changePassword
 );
