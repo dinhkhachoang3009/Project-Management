@@ -57,6 +57,26 @@ const getCommentsByTaskId = async (req, res) => {
   try {
     const { taskId } = req.params;
 
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    const project = await Project.findById(task.project);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    const isMember = project.members.some(
+      (member) => member.user.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({
+        message: "You are not a member of this project",
+      });
+    }
+
     const comments = await Comment.find({ task: taskId })
       .populate("author", "name email profilePicture")
       .sort({ createdAt: -1 });

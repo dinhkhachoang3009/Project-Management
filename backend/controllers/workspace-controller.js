@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
 import User from "../models/user.js";
@@ -58,13 +59,23 @@ const getWorkspaceDetails = async (req, res) => {
   try {
     const { workspaceId } = req.params;
 
-    const workspace = await Workspace.findById({
-      _id: workspaceId,
-    }).populate("members.user", "name email profilePicture");
+    const workspace = await Workspace.findById(
+      workspaceId
+    ).populate("members.user", "name email profilePicture");
 
     if (!workspace) {
       return res.status(404).json({
         message: "Workspace not found",
+      });
+    }
+
+    const isMember = workspace.members.some(
+      (member) => member.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({
+        message: "You are not a member of this workspace",
       });
     }
 
@@ -204,9 +215,10 @@ const inviteUserToWorkspace = async (req, res) => {
   }
 };
 
-const acceptGenerateInvite = async (req, res) => {
+const createInviteLink = async (req, res) => {
   try {
     const { workspaceId } = req.params;
+    const role = req.body?.role || "member";
 
     const workspace = await Workspace.findById(workspaceId);
 
@@ -216,40 +228,83 @@ const acceptGenerateInvite = async (req, res) => {
       });
     }
 
-    const isMember = workspace.members.some(
+    const userMemberInfo = workspace.members.find(
       (member) => member.user.toString() === req.user._id.toString()
     );
 
-    if (isMember) {
-      return res.status(400).json({
-        message: "You are already a member of this workspace",
+    if (!userMemberInfo || !["admin", "owner"].includes(userMemberInfo.role)) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to create an invite link for this workspace",
       });
     }
 
-    workspace.members.push({
-      user: req.user._id,
-      role: "member",
-      joinedAt: new Date(),
+    const regenerate = req.body?.regenerate === true;
+
+    // idempotent: re-opening the dialog must not silently revoke a link the
+    // admin may already have shared — regeneration is explicit
+    if (!regenerate) {
+      const activeLinkInvite = await WorkspaceInvite.findOne({
+        workspaceId: workspace._id,
+        type: "link",
+        expiresAt: { $gt: new Date() },
+      });
+
+      if (activeLinkInvite) {
+        return res.status(200).json({
+          message: "Invite link created",
+          link: `${process.env.FRONTEND_URL}/workspace-invite/${workspaceId}?tk=${activeLinkInvite.token}`,
+        });
+      }
+    }
+
+    // regeneration (or no active link) revokes previous link invites
+    await WorkspaceInvite.deleteMany({
+      workspaceId: workspace._id,
+      type: "link",
     });
 
-    await workspace.save();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    recordActivity(
-      req.user._id,
-      "joined_workspace",
-      "Workspace",
-      workspace._id,
-      { method: "open_link" }
+    // jti nonce: a regenerated link is always a distinct token, even when
+    // two generations land in the same second (jwt iat granularity)
+    const token = jwt.sign(
+      {
+        workspaceId: workspace._id,
+        role,
+        purpose: "workspace-join",
+        jti: crypto.randomUUID(),
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
+    await WorkspaceInvite.create({
+      workspaceId: workspace._id,
+      token,
+      type: "link",
+      role,
+      expiresAt,
+    });
+
     res.status(200).json({
-      message: "Invitation accepted successfully",
+      message: "Invite link created",
+      link: `${process.env.FRONTEND_URL}/workspace-invite/${workspaceId}?tk=${token}`,
     });
   } catch (error) {
     res.status(500).json({
       message: "Internal server error",
     });
   }
+};
+
+const acceptGenerateInvite = async (req, res) => {
+  // Open "join by raw link" is closed (decision D3); joining now requires a
+  // token-gated invite link created by an admin/owner (createInviteLink).
+  return res.status(400).json({
+    message:
+      "Invalid invite link. Please use the link shared by a workspace admin.",
+  });
 };
 
 const getWorkspaceStats = async (req, res) => {
@@ -460,11 +515,11 @@ const acceptInviteByToken = async (req, res) => {
   try {
     const { token } = req.body;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
 
-    const { user, workspaceId, role } = decoded;
-
-    const workspace = await Workspace.findById(workspaceId);
+    const workspace = await Workspace.findById(decoded.workspaceId);
 
     if (!workspace) {
       return res.status(404).json({
@@ -472,20 +527,29 @@ const acceptInviteByToken = async (req, res) => {
       });
     }
 
+    if (decoded.purpose !== "workspace-join" && !decoded.user) {
+      // not an email invite and not a link invite — e.g. a session token
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const targetUserId =
+      decoded.purpose === "workspace-join" ? req.user._id : decoded.user;
+
     const isMember = workspace.members.some(
-      (member) => member.user.toString() === user.toString()
+      (member) => member.user.toString() === targetUserId.toString()
     );
 
     if (isMember) {
       return res.status(400).json({
-        message: "User already a member of this workspace",
+        message: "You are already a member of this workspace",
       });
     }
 
-    const inviteInfo = await WorkspaceInvite.findOne({
-      user: user,
-      workspaceId: workspaceId,
-    });
+    const inviteInfo = await WorkspaceInvite.findOne(
+      decoded.purpose === "workspace-join"
+        ? { workspaceId: workspace._id, token, type: "link" }
+        : { user: decoded.user, workspaceId: workspace._id }
+    );
 
     if (!inviteInfo) {
       return res.status(404).json({
@@ -500,19 +564,20 @@ const acceptInviteByToken = async (req, res) => {
     }
 
     workspace.members.push({
-      user: user,
-      role: role || "member",
+      user: targetUserId,
+      role: decoded.role || "member",
       joinedAt: new Date(),
     });
 
     await workspace.save();
 
-    await Promise.all([
-      WorkspaceInvite.deleteOne({ _id: inviteInfo._id }),
-    ]);
+    // email invites are single-use; link invites stay valid until expiry
+    if (decoded.purpose !== "workspace-join") {
+      await WorkspaceInvite.deleteOne({ _id: inviteInfo._id });
+    }
 
     recordActivity(
-      user,
+      targetUserId,
       "joined_workspace",
       "Workspace",
       workspace._id,
@@ -523,6 +588,12 @@ const acceptInviteByToken = async (req, res) => {
       message: "Invitation accepted successfully",
     });
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Invitation has expired" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     res.status(500).json({
       message: "Internal server error",
     });
@@ -601,6 +672,7 @@ export {
   getWorkspaceProjects,
   getWorkspaceStats,
   inviteUserToWorkspace,
+  createInviteLink,
   acceptGenerateInvite,
   acceptInviteByToken,
   updateWorkspace,
