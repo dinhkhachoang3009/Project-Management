@@ -5,6 +5,13 @@ import Verification from "../models/verification.js";
 import { sendEmail } from "../libs/send-email.js";
 import aj from "../libs/arcjet.js";
 
+// A VALID bcrypt hash (of a fixed dummy password) used to flatten the
+// timing of "user does not exist" paths (anti-enumeration/timing hardening).
+const DUMMY_BCRYPT_HASH =
+  "$2b$10$zQ2KIFdVKljsuTbTn9JywudhoySEt5HK9sUryS33LerTWuRg630Ie";
+const GENERIC_RESET_MESSAGE =
+  "If an account with that email exists, a reset password email has been sent.";
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -98,25 +105,27 @@ const loginUser = async (req, res) => {
           { expiresIn: "1h" },
         );
 
-        await Verification.create({
-          userId: user._id,
-          token: verificationToken,
-          expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), //1 hour
-        });
-
-        // Send verification email to the user
+        // send FIRST; only persist the token when the email actually left —
+        // a failed send must not consume the 1h resend window
         const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
         const emailBody = `<p>Click <a href="${verificationLink}">here</a> to verify your email address.</p>`;
         const emailSubject = "Email Verification";
 
         const isEmailSent = await sendEmail(email, emailSubject, emailBody);
 
-        if(!isEmailSent) {
+        if (!isEmailSent) {
           return res.status(500).json({
-            message: "Failed to send verification email"
+            message: "Failed to send verification email",
           });
         }
-        return res.status(201).json({
+
+        await Verification.create({
+          userId: user._id,
+          token: verificationToken,
+          expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), //1 hour
+        });
+
+        return res.status(200).json({
           message: "Verification email sent successfully. Please check your inbox.",
         });
       }
@@ -152,7 +161,9 @@ const verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
     if (!payload) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -186,6 +197,14 @@ const verifyEmail = async (req, res) => {
 
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "Verification token expired" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
@@ -196,12 +215,14 @@ const resetPasswordRequest = async (req, res) => {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-
-    if (!user.isEmailVerified) {
-      return res.status(400).json({ message: "Please verify your email first" });
+    if (!user || !user.isEmailVerified) {
+      // anti-enumeration: always the same generic response, with a dummy
+      // bcrypt compare so the timing matches the "email sent" path
+      await bcrypt.compare(
+        "dummy-password-for-tests",
+        DUMMY_BCRYPT_HASH
+      );
+      return res.status(200).json({ message: GENERIC_RESET_MESSAGE });
     }
 
     // Xóa yêu cầu cũ bất kể còn hạn hay không, chỉ giữ cái mới nhất
@@ -242,7 +263,9 @@ const verifyResetPasswordTokenAndResetPassword = async (req, res) => {
   try {
     const { token, newPassword, confirmPassword } = req.body;
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
     if (!payload) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -281,6 +304,12 @@ const verifyResetPasswordTokenAndResetPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
