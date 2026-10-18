@@ -5,7 +5,8 @@ const workspaceInviteSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      // required for "email" invites only; "link" invites are not user-bound
+      // validation is enforced in the controllers
     },
     workspaceId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +16,11 @@ const workspaceInviteSchema = new mongoose.Schema(
     token: {
       type: String,
       required: true,
+    },
+    type: {
+      type: String,
+      enum: ["email", "link"],
+      default: "email",
     },
     role: {
       type: String,

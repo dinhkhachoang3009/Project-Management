@@ -3,6 +3,7 @@ import { validateRequest } from "zod-express-middleware";
 import {
   acceptGenerateInvite,
   acceptInviteByToken,
+  createInviteLink,
   createWorkspace,
   deleteWorkspace,
   getWorkspaceDetails,
@@ -13,6 +14,7 @@ import {
   updateWorkspace,
 } from "../controllers/workspace-controller.js";
 import {
+  inviteLinkSchema,
   inviteMemberSchema,
   tokenSchema,
   workspaceSchema,
@@ -44,6 +46,16 @@ router.post(
     body: inviteMemberSchema,
   }),
   inviteUserToWorkspace
+);
+
+router.post(
+  "/:workspaceId/invite-link",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ workspaceId: z.string() }),
+    body: inviteLinkSchema,
+  }),
+  createInviteLink
 );
 
 router.post(
