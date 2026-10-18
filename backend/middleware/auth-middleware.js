@@ -19,7 +19,17 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+
+    if (decoded.purpose) {
+      // Verify/reset/join tokens are not session tokens.
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
     const user = await User.findById(decoded.userId);
 
     if (!user) {
