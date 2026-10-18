@@ -11,3 +11,4 @@ coverage/
 # Local opencode config
 Opencode-Linux/
 AGENTS.md
+.opencode/
