@@ -35,6 +35,9 @@ const workspaceInviteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// B5: expired invite docs auto-delete at expiresAt (Mongo TTL sweep)
+workspaceInviteSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 const WorkspaceInvite = mongoose.model(
   "WorkspaceInvite",
   workspaceInviteSchema

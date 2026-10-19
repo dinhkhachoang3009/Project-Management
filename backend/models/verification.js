@@ -17,5 +17,8 @@ const verificationSchema = new mongoose.Schema(
     },
   },{ timestamps: true },);
 
+// B5: expired verification docs auto-delete at expiresAt (Mongo TTL sweep)
+verificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 const Verification = mongoose.model("Verification", verificationSchema);
 export default Verification;
