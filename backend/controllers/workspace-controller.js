@@ -2,6 +2,9 @@ import crypto from "crypto";
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
 import User from "../models/user.js";
+import Task from "../models/task.js";
+import Comment from "../models/comment.js";
+import ActivityLog from "../models/activity.js";
 import WorkspaceInvite from "../models/workspace-invite.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../libs/send-email.js";
@@ -330,52 +333,49 @@ const getWorkspaceStats = async (req, res) => {
     }
 
     const [totalProjects, projects] = await Promise.all([
-      Project.countDocuments({ workspace: workspaceId }),
-      Project.find({ workspace: workspaceId })
+      Project.countDocuments({ workspace: workspaceId, isArchived: false }),
+      Project.find({ workspace: workspaceId, isArchived: false })
         .populate(
           "tasks",
-          "title status dueDate project updatedAt isArchived priority"
+          "title status dueDate project updatedAt createdAt isArchived priority"
         )
         .sort({ createdAt: -1 }),
     ]);
 
-    const totalTasks = projects.reduce((acc, project) => {
-      return acc + project.tasks.length;
-    }, 0);
+    // locked D3 contract: archived tasks are excluded from ALL dashboard
+    // numbers — filter once here; totals, charts, trends, upcoming and
+    // productivity all read from this single filtered list
+    const tasks = projects.flatMap((project) =>
+      project.tasks.filter((task) => task.isArchived === false)
+    );
+
+    const totalTasks = tasks.length;
 
     const totalProjectInProgress = projects.filter(
       (project) => project.status === "In Progress"
     ).length;
 
-    const totalTaskCompleted = projects.reduce((acc, project) => {
-      return (
-        acc + project.tasks.filter((task) => task.status === "Done").length
-      );
-    }, 0);
+    const totalTaskCompleted = tasks.filter(
+      (task) => task.status === "Done"
+    ).length;
 
-    const totalTaskToDo = projects.reduce((acc, project) => {
-      return (
-        acc + project.tasks.filter((task) => task.status === "To Do").length
-      );
-    }, 0);
+    const totalTaskToDo = tasks.filter((task) => task.status === "To Do")
+      .length;
 
-    const totalTaskInProgress = projects.reduce((acc, project) => {
-      return (
-        acc +
-        project.tasks.filter((task) => task.status === "In Progress").length
-      );
-    }, 0);
+    const totalTaskInProgress = tasks.filter(
+      (task) => task.status === "In Progress"
+    ).length;
 
-    const tasks = projects.flatMap((project) => project.tasks);
-
-    const upcomingTasks = tasks.filter((task) => {
-      const taskDate = new Date(task.dueDate);
-      const today = new Date();
-      return (
-        taskDate > today &&
-        taskDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-      );
-    });
+    const upcomingTasks = tasks
+      .filter((task) => task.status !== "Done")
+      .filter((task) => {
+        const taskDate = new Date(task.dueDate);
+        const today = new Date();
+        return (
+          taskDate > today &&
+          taskDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+        );
+      });
 
     const taskTrendsData = [
       { name: "Sun", completed: 0, inProgress: 0, todo: 0 },
@@ -387,42 +387,43 @@ const getWorkspaceStats = async (req, res) => {
       { name: "Sat", completed: 0, inProgress: 0, todo: 0 },
     ];
 
+    // D4: bucket by createdAt with UTC day math (the container's TZ must not
+    // shift which day a task lands in, nor the weekday label)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
-      date.setDate(date.getDate() - i);
+      date.setUTCDate(date.getUTCDate() - i);
       return date;
     }).reverse();
 
-    for (const project of projects) {
-      for (const task of project.tasks) {
-        const taskDate = new Date(task.updatedAt);
+    for (const task of tasks) {
+      const taskDate = new Date(task.createdAt);
 
-        const dayInDate = last7Days.findIndex(
-          (date) =>
-            date.getDate() === taskDate.getDate() &&
-            date.getMonth() === taskDate.getMonth() &&
-            date.getFullYear() === taskDate.getFullYear()
-        );
+      const dayInDate = last7Days.findIndex(
+        (date) =>
+          date.getUTCDate() === taskDate.getUTCDate() &&
+          date.getUTCMonth() === taskDate.getUTCMonth() &&
+          date.getUTCFullYear() === taskDate.getUTCFullYear()
+      );
 
-        if (dayInDate !== -1) {
-          const dayName = last7Days[dayInDate].toLocaleDateString("en-US", {
-            weekday: "short",
-          });
+      if (dayInDate !== -1) {
+        const dayName = last7Days[dayInDate].toLocaleDateString("en-US", {
+          weekday: "short",
+          timeZone: "UTC",
+        });
 
-          const dayData = taskTrendsData.find((day) => day.name === dayName);
+        const dayData = taskTrendsData.find((day) => day.name === dayName);
 
-          if (dayData) {
-            switch (task.status) {
-              case "Done":
-                dayData.completed++;
-                break;
-              case "In Progress":
-                dayData.inProgress++;
-                break;
-              case "To Do":
-                dayData.todo++;
-                break;
-            }
+        if (dayData) {
+          switch (task.status) {
+            case "Done":
+              dayData.completed++;
+              break;
+            case "In Progress":
+              dayData.inProgress++;
+              break;
+            case "To Do":
+              dayData.todo++;
+              break;
           }
         }
       }
@@ -432,6 +433,8 @@ const getWorkspaceStats = async (req, res) => {
       { name: "Completed", value: 0, color: "#10b981" },
       { name: "In Progress", value: 0, color: "#3b82f6" },
       { name: "Planning", value: 0, color: "#f59e0b" },
+      { name: "On Hold", value: 0, color: "#eab308" },
+      { name: "Cancelled", value: 0, color: "#ef4444" },
     ];
 
     for (const project of projects) {
@@ -444,6 +447,12 @@ const getWorkspaceStats = async (req, res) => {
           break;
         case "Planning":
           projectStatusData[2].value++;
+          break;
+        case "On Hold":
+          projectStatusData[3].value++;
+          break;
+        case "Cancelled":
+          projectStatusData[4].value++;
           break;
       }
     }
@@ -655,6 +664,30 @@ const deleteWorkspace = async (req, res) => {
       return res.status(403).json({
         message: "Only workspace owner can delete this workspace",
       });
+    }
+
+    // B2 cascade: workspace → projects → tasks → comments, plus every
+    // activity row whose resource was any of them (children first, parent
+    // last; no transaction — see deleteProject).
+    const projectIds = await Project.find({ workspace: workspaceId }).distinct("_id");
+    const taskIds = projectIds.length
+      ? await Task.find({ project: { $in: projectIds } }).distinct("_id")
+      : [];
+    const commentIds = taskIds.length
+      ? await Comment.find({ task: { $in: taskIds } }).distinct("_id")
+      : [];
+
+    if (taskIds.length) {
+      await Task.deleteMany({ project: { $in: projectIds } });
+    }
+    if (commentIds.length) {
+      await Comment.deleteMany({ task: { $in: taskIds } });
+    }
+    await ActivityLog.deleteMany({
+      resourceId: { $in: [workspaceId, ...projectIds, ...taskIds, ...commentIds] },
+    });
+    if (projectIds.length) {
+      await Project.deleteMany({ workspace: workspaceId });
     }
 
     await Workspace.findByIdAndDelete(workspaceId);

@@ -1,5 +1,8 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
+import Task from "../models/task.js";
+import Comment from "../models/comment.js";
+import ActivityLog from "../models/activity.js";
 import { recordActivity } from "../libs/index.js";
 
 const createProject = async (req, res) => {
@@ -176,6 +179,22 @@ const deleteProject = async (req, res) => {
         message: "Only project manager can delete this project",
       });
     }
+
+    // cascade: children first, parent last. No transaction (standalone
+    // mongod in tests + low-frequency admin op) — children-first keeps the
+    // state re-runnable on failure.
+    const taskIds = await Task.find({ project: projectId }).distinct("_id");
+    const commentIds = taskIds.length
+      ? await Comment.find({ task: { $in: taskIds } }).distinct("_id")
+      : [];
+
+    await Task.deleteMany({ project: projectId });
+    if (commentIds.length) {
+      await Comment.deleteMany({ task: { $in: taskIds } });
+    }
+    await ActivityLog.deleteMany({
+      resourceId: { $in: [projectId, ...taskIds, ...commentIds] },
+    });
 
     await Project.findByIdAndDelete(projectId);
 
