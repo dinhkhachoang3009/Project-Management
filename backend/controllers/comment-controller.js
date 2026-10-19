@@ -1,32 +1,15 @@
 import Comment from "../models/comment.js";
-import Task from "../models/task.js";
-import Project from "../models/project.js";
+import ActivityLog from "../models/activity.js";
 import { recordActivity } from "../libs/index.js";
+import { resolveTaskMember } from "../libs/permissions.js";
 
 const addComment = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { text } = req.body;
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-    const isMember = project.members.some(
-      (member) => member.user.toString() === req.user._id.toString()
-    );
-
-    if (!isMember) {
-      return res.status(403).json({
-        message: "You are not a member of this project",
-      });
-    }
+    const { error, status } = await resolveTaskMember(taskId, req.user._id);
+    if (error) return res.status(status).json({ message: error });
 
     const comment = await Comment.create({
       task: taskId,
@@ -57,25 +40,8 @@ const getCommentsByTaskId = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-    const isMember = project.members.some(
-      (member) => member.user.toString() === req.user._id.toString()
-    );
-
-    if (!isMember) {
-      return res.status(403).json({
-        message: "You are not a member of this project",
-      });
-    }
+    const { error, status } = await resolveTaskMember(taskId, req.user._id);
+    if (error) return res.status(status).json({ message: error });
 
     const comments = await Comment.find({ task: taskId })
       .populate("author", "name email profilePicture")
@@ -103,6 +69,12 @@ const deleteComment = async (req, res) => {
     }
 
     await Comment.deleteOne({ _id: commentId });
+
+    // B7: a deleted comment takes its added_comment activity rows with it
+    await ActivityLog.deleteMany({
+      resourceType: "Comment",
+      resourceId: commentId,
+    });
 
     res.status(200).json({ message: "Comment deleted" });
   } catch (error) {
