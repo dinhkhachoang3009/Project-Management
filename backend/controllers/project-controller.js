@@ -3,7 +3,44 @@ import Project from "../models/project.js";
 import Task from "../models/task.js";
 import Comment from "../models/comment.js";
 import ActivityLog from "../models/activity.js";
+import User from "../models/user.js";
 import { recordActivity } from "../libs/index.js";
+
+// B3a: every supplied member must be an existing user AND a workspace
+// member, and the final list must keep at least one manager (the creator is
+// auto-added as manager before this runs on create).
+const validateProjectMembers = async (projectMembers, workspaceId) => {
+  const userIds = [
+    ...new Set(projectMembers.map((m) => m.user.toString())),
+  ].filter(Boolean);
+
+  const existing = await User.find({ _id: { $in: userIds } }, "_id");
+  const existingIds = new Set(existing.map((u) => u._id.toString()));
+
+  const workspace = await Workspace.findById(workspaceId, "members");
+  if (!workspace) {
+    return { error: "Workspace not found", status: 404 };
+  }
+  const memberIds = new Set(
+    workspace.members.map((m) => m.user.toString())
+  );
+
+  for (const id of userIds) {
+    if (!existingIds.has(id) || !memberIds.has(id)) {
+      return {
+        error: "All project members must be members of this workspace",
+        status: 400,
+      };
+    }
+  }
+
+  const hasManager = projectMembers.some((m) => m.role === "manager");
+  if (!hasManager) {
+    return { error: "A project must have at least one manager", status: 400 };
+  }
+
+  return { error: null };
+};
 
 const createProject = async (req, res) => {
   try {
@@ -48,6 +85,12 @@ const createProject = async (req, res) => {
       projectMembers.push({ user: req.user._id, role: "manager" });
     }
 
+    const { error: memberError, status: memberStatus } =
+      await validateProjectMembers(projectMembers, workspaceId);
+    if (memberError) {
+      return res.status(memberStatus).json({ message: memberError });
+    }
+
     const newProject = await Project.create({
       title,
       description,
@@ -60,8 +103,9 @@ const createProject = async (req, res) => {
       createdBy: req.user._id,
     });
 
-    workspace.projects.push(newProject._id);
-    await workspace.save();
+    await Workspace.findByIdAndUpdate(workspaceId, {
+      $push: { projects: newProject._id },
+    });
 
     recordActivity(
       req.user._id,
@@ -142,7 +186,14 @@ const updateProject = async (req, res) => {
     if (startDate !== undefined) project.startDate = startDate;
     if (dueDate !== undefined) project.dueDate = dueDate;
     if (tags !== undefined) project.tags = tags ? tags.split(",") : [];
-    if (members !== undefined) project.members = members;
+    if (members !== undefined) {
+      const { error: memberError, status: memberStatus } =
+        await validateProjectMembers(members, project.workspace);
+      if (memberError) {
+        return res.status(memberStatus).json({ message: memberError });
+      }
+      project.members = members;
+    }
 
     await project.save();
 
@@ -180,9 +231,9 @@ const deleteProject = async (req, res) => {
       });
     }
 
-    // cascade: children first, parent last. No transaction (standalone
-    // mongod in tests + low-frequency admin op) — children-first keeps the
-    // state re-runnable on failure.
+    // B2 cascade: children first, parent last. No transaction (standalone
+    // test mongod + low-frequency admin op) — children-first keeps the state
+    // re-runnable on failure.
     const taskIds = await Task.find({ project: projectId }).distinct("_id");
     const commentIds = taskIds.length
       ? await Comment.find({ task: { $in: taskIds } }).distinct("_id")

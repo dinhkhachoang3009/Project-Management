@@ -1,22 +1,43 @@
 import Project from "../models/project.js";
 import Task from "../models/task.js";
+import User from "../models/user.js";
 import ActivityLog from "../models/activity.js";
 import { recordActivity } from "../libs/index.js";
+import { resolveTaskMember } from "../libs/permissions.js";
+
+// B3b (D4): assignees must be existing users who are members of the task's
+// project — any project role (incl. viewer). Invalid ids → 400 before any
+// mutation.
+const validateTaskAssignees = async (assignees, project) => {
+  const ids = [...new Set(assignees.map((a) => a?.toString()).filter(Boolean))];
+  if (ids.length === 0) return { error: null, status: null };
+
+  const existing = await User.find({ _id: { $in: ids } }, "_id");
+  const existingIds = new Set(existing.map((u) => u._id.toString()));
+  const memberIds = new Set(project.members.map((m) => m.user.toString()));
+
+  for (const id of ids) {
+    if (!existingIds.has(id) || !memberIds.has(id)) {
+      return {
+        error: "Assignees must be members of this project",
+        status: 400,
+      };
+    }
+  }
+
+  return { error: null };
+};
 
 const checkTaskPermission = async (taskId, userId, allowedRoles) => {
-  const task = await Task.findById(taskId);
-  if (!task) return { error: "Task not found", status: 404 };
-
-  const project = await Project.findById(task.project);
-  if (!project) return { error: "Project not found", status: 404 };
+  const { task, project, error, status } = await resolveTaskMember(
+    taskId,
+    userId
+  );
+  if (error) return { error, status };
 
   const userRole = project.members.find(
     (member) => member.user.toString() === userId.toString()
   )?.role;
-
-  if (!userRole) {
-    return { error: "You are not a member of this project", status: 403 };
-  }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
     return {
@@ -64,6 +85,14 @@ const createTask = async (req, res) => {
       taskAssignees.push(req.user._id);
     }
 
+    const { error: assigneeError, status: assigneeStatus } =
+      await validateTaskAssignees(taskAssignees, project);
+    if (assigneeError) {
+      return res
+        .status(assigneeStatus)
+        .json({ message: assigneeError });
+    }
+
     const newTask = await Task.create({
       title,
       description,
@@ -75,8 +104,9 @@ const createTask = async (req, res) => {
       createdBy: req.user._id,
     });
 
-    project.tasks.push(newTask._id);
-    await project.save();
+    await Project.findByIdAndUpdate(projectId, {
+      $push: { tasks: newTask._id },
+    });
 
     recordActivity(
       req.user._id,
@@ -316,12 +346,18 @@ const updateTaskAssignees = async (req, res) => {
     const { taskId } = req.params;
     const { assignees } = req.body;
 
-    const { task, error, status } = await checkTaskPermission(
+    const { task, project, error, status } = await checkTaskPermission(
       taskId,
       req.user._id,
       ["manager", "contributor"]
     );
     if (error) return res.status(status).json({ message: error });
+
+    const { error: assigneeError, status: assigneeStatus } =
+      await validateTaskAssignees(assignees || [], project);
+    if (assigneeError) {
+      return res.status(assigneeStatus).json({ message: assigneeError });
+    }
 
     task.assignees = assignees;
     await task.save();
@@ -405,7 +441,6 @@ const getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({
       assignees: req.user._id,
-      isArchived: false,
     })
       .populate("project", "title workspace")
       .populate("assignees", "name profilePicture")
@@ -486,25 +521,11 @@ const getActivityByResourceId = async (req, res) => {
   try {
     const { resourceId } = req.params;
 
-    const task = await Task.findById(resourceId);
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-    const isMember = project.members.some(
-      (member) => member.user.toString() === req.user._id.toString()
+    const { error, status } = await resolveTaskMember(
+      resourceId,
+      req.user._id
     );
-
-    if (!isMember) {
-      return res.status(403).json({
-        message: "You are not a member of this project",
-      });
-    }
+    if (error) return res.status(status).json({ message: error });
 
     const activities = await ActivityLog.find({ resourceId })
       .populate("user", "name email profilePicture")
