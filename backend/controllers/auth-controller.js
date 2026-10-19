@@ -71,6 +71,12 @@ const registerUser = async (req, res) => {
         "Verification email sent to your email.Please check and verify your inbox.",
     });
   } catch (error) {
+    // B6: the parallel-register race can reach the unique index even after
+    // the pre-check in both requests miss — surface it as the same 400 copy
+    // the pre-check returns, not a 500
+    if (error && error.code === 11000) {
+      return res.status(400).json({ message: "Email address already exists" });
+    }
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
