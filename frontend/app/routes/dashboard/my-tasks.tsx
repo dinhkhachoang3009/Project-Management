@@ -36,6 +36,31 @@ const getProjectInfo = (task: Task) => {
   };
 };
 
+export const filterMyTasks = (
+  tasks: Task[] | undefined,
+  filter: string,
+  search: string
+): Task[] => {
+  if (!tasks?.length) return [];
+  return tasks
+    .filter((task) => {
+      // archived tasks show ONLY under the achieved filter
+      if (filter === "achieved") return task.isArchived === true;
+      if (task.isArchived === true) return false;
+      if (filter === "all") return true;
+      if (filter === "todo") return task.status === "To Do";
+      if (filter === "inprogress") return task.status === "In Progress";
+      if (filter === "done") return task.status === "Done";
+      if (filter === "high") return task.priority === "High";
+      return true;
+    })
+    .filter(
+      (task) =>
+        task.title.toLowerCase().includes(search.toLowerCase()) ||
+        task.description?.toLowerCase().includes(search.toLowerCase())
+    );
+};
+
 const MyTasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -79,24 +104,7 @@ const MyTasks = () => {
     isLoading: boolean;
   };
 
-  const filteredTasks =
-    myTasks?.length > 0
-      ? myTasks
-          .filter((task) => {
-            if (filter === "all") return true;
-            if (filter === "todo") return task.status === "To Do";
-            if (filter === "inprogress") return task.status === "In Progress";
-            if (filter === "done") return task.status === "Done";
-            if (filter === "achieved") return task.isArchived === true;
-            if (filter === "high") return task.priority === "High";
-            return true;
-          })
-          .filter(
-            (task) =>
-              task.title.toLowerCase().includes(search.toLowerCase()) ||
-              task.description?.toLowerCase().includes(search.toLowerCase())
-          )
-      : [];
+  const filteredTasks = filterMyTasks(myTasks, filter, search);
 
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     if (a.dueDate && b.dueDate) {
