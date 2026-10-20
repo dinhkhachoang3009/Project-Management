@@ -1,5 +1,6 @@
 import { useAuth } from "@/provider/auth-context";
 import { publicRoutes } from "@/lib";
+import { Loader } from "@/components/loader";
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 
@@ -10,7 +11,7 @@ const AuthLayout = () => {
 
   // Chỉ hiện loading trên private routes
   if (isLoading && !isPublicRoute) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   if (isAuthenticated) {

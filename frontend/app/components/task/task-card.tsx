@@ -61,7 +61,7 @@ export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-6"
+                  className="size-8"
                   onClick={(e) => handleStatusChange(e, "To Do")}
                   title="Mark as To Do"
                 >
@@ -72,7 +72,7 @@ export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-6"
+                  className="size-8"
                   onClick={(e) => handleStatusChange(e, "In Progress")}
                   title="Mark as In Progress"
                 >
@@ -83,7 +83,7 @@ export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-6"
+                  className="size-8"
                   onClick={(e) => handleStatusChange(e, "Done")}
                   title="Mark as Done"
                 >

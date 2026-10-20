@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useGetMyTasksQuery } from "@/hooks/use-task";
+import { buildTaskDetailUrl } from "@/lib/task-url";
 import { Loader } from "@/components/loader";
 import type { Task } from "@/types";
 import { format } from "date-fns";
@@ -17,7 +18,7 @@ const Achieved = () => {
 
   if (isLoading) {
     return (
-      <div>
+      <div className="h-64">
         <Loader />
       </div>
     );
@@ -45,19 +46,28 @@ const Achieved = () => {
         <CardContent>
           {archivedTasks.length > 0 ? (
             <div className="divide-y">
-              {archivedTasks.map((task) => (
-                <div
-                  key={task._id}
-                  className="py-4 flex items-center justify-between"
-                >
-                  <div>
-                    <Link
-                      to={`/workspaces/${typeof task.project === "string" ? task.project : task.project?._id}/projects/${typeof task.project === "string" ? task.project : task.project?._id}/tasks/${task._id}`}
-                      className="font-medium hover:text-primary hover:underline transition-colors flex items-center"
-                    >
-                      {task.title}
-                      <ArrowUpRight className="size-4 ml-1" />
-                    </Link>
+              {archivedTasks.map((task) => {
+                const taskUrl = buildTaskDetailUrl(task);
+
+                return (
+                  <div
+                    key={task._id}
+                    className="py-4 flex items-center justify-between"
+                  >
+                    <div>
+                      {taskUrl ? (
+                        <Link
+                          to={taskUrl}
+                          className="font-medium hover:text-primary hover:underline transition-colors flex items-center"
+                        >
+                          {task.title}
+                          <ArrowUpRight className="size-4 ml-1" />
+                        </Link>
+                      ) : (
+                        <span className="font-medium flex items-center">
+                          {task.title}
+                        </span>
+                      )}
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline">{task.status}</Badge>
                       <Badge variant="secondary">{task.priority}</Badge>
@@ -70,7 +80,8 @@ const Achieved = () => {
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">

@@ -123,7 +123,7 @@ const MyTasks = () => {
 
   if (isLoading)
     return (
-      <div>
+      <div className="h-64">
         <Loader />
       </div>
     );
@@ -177,7 +177,7 @@ const MyTasks = () => {
       </div>
 
       <Input
-        placeholder="Search tasks ...."
+        placeholder="Search tasks..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-md"

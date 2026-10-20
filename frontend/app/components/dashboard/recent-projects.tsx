@@ -10,7 +10,7 @@ export const RecentProjects = ({ data }: { data: Project[] }) => {
   const workspaceId = searchParams.get("workspaceId");
 
   return (
-    <Card className="lg:col-spa-2">
+    <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>Recent Projects</CardTitle>
       </CardHeader>

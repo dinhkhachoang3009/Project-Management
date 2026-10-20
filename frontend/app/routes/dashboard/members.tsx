@@ -76,7 +76,7 @@ const Members = () => {
       </div>
 
       <Input
-        placeholder="Search members ...."
+        placeholder="Search members..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-md"
@@ -130,8 +130,6 @@ const Members = () => {
                       >
                         {member.role}
                       </Badge>
-
-                      <Badge variant="outline">{data.name}</Badge>
                     </div>
                   </div>
                 ))}
