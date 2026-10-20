@@ -13,6 +13,7 @@ import { Check, Copy, Mail } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useInviteMemberMutation, useGenerateInviteLinkMutation } from "@/hooks/use-workspace";
 import { toast } from "sonner";
+import { useId } from "react";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const InviteMemberDialog = ({
   const [inviteTab, setInviteTab] = useState("email");
   const [linkCopied, setLinkCopied] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const roleGroupId = useId();
 
   const form = useForm<InviteMemberFormData>({
     resolver: zodResolver(inviteMemberSchema),
@@ -70,7 +72,8 @@ export const InviteMemberDialog = ({
         },
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // deps intentionally limited: regenerate only when the tab/dialog opens
+    // for a fresh workspace (see comment above)
   }, [inviteTab, isOpen, inviteLink, workspaceId]);
 
   const handleRegenerateLink = () => {
@@ -183,14 +186,15 @@ export const InviteMemberDialog = ({
                                   >
                                     <input
                                       type="radio"
+                                      name={`invite-role-${roleGroupId}`}
                                       value={role}
-                                      className="peer hidden"
+                                      className="peer sr-only"
                                       checked={field.value === role}
                                       onChange={() => field.onChange(role)}
                                     />
                                     <span
                                       className={cn(
-                                        "w-7 h-7 rounded-full  border-2 border-blue-300 flex items-center justify-center transition-all duration-300 hover:shadow-lg bg-blue-900 text-white",
+                                        "w-7 h-7 rounded-full  border-2 border-blue-300 flex items-center justify-center transition-all duration-300 hover:shadow-lg bg-blue-600 dark:bg-blue-500 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2",
                                         field.value === role &&
                                           "ring-2 ring-blue-500 ring-offset-2 "
                                       )}

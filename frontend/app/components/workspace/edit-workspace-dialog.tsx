@@ -1,6 +1,6 @@
 import { workspaceSchema } from "@/lib/schema";
 import { colorOptions, type WorkspaceForm } from "./create-workspace";
-import { cn } from "@/lib/utils";
+import { ColorPicker } from "./color-picker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -125,20 +125,11 @@ export const EditWorkspaceDialog = ({
                   <FormItem>
                     <FormLabel>Color</FormLabel>
                     <FormControl>
-                      <div className="flex gap-3 flex-wrap">
-                        {colorOptions.map((color) => (
-                          <div
-                            key={color}
-                            onClick={() => field.onChange(color)}
-                            className={cn(
-                              "w-6 h-6 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300",
-                              field.value === color &&
-                                "ring-2 ring-offset-2 ring-blue-500"
-                            )}
-                            style={{ backgroundColor: color }}
-                          ></div>
-                        ))}
-                      </div>
+                      <ColorPicker
+                        options={colorOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,5 +1,4 @@
 import { workspaceSchema } from "@/lib/schema";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
@@ -21,9 +20,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ColorPicker } from "./color-picker";
 import { useCreateWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { useId } from "react";
 
 interface CreateWorkspaceProps {
   isCreatingWorkspace: boolean;
@@ -56,6 +57,7 @@ export const CreateWorkspace = ({
     },
   });
   const navigate = useNavigate();
+  const colorGroupId = useId();
   const { mutate, isPending } = useCreateWorkspace();
 
   const onSubmit = (data: WorkspaceForm) => {
@@ -125,20 +127,12 @@ export const CreateWorkspace = ({
                   <FormItem>
                     <FormLabel>Color</FormLabel>
                     <FormControl>
-                      <div className="flex gap-3 flex-wrap">
-                        {colorOptions.map((color) => (
-                          <div
-                            key={color}
-                            onClick={() => field.onChange(color)}
-                            className={cn(
-                              "w-6 h-6 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300",
-                              field.value === color &&
-                                "ring-2 ring-offset-2 ring-blue-500"
-                            )}
-                            style={{ backgroundColor: color }}
-                          ></div>
-                        ))}
-                      </div>
+                      <ColorPicker
+                        options={colorOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        name={`workspace-color-${colorGroupId}`}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
