@@ -1,7 +1,7 @@
 import type { User, Workspace } from "@/types";
 import { WorkspaceAvatar } from "./workspace-avatar";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus } from "lucide-react";
+import { Pencil, Plus, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface WorkspaceHeaderProps {
@@ -14,6 +14,8 @@ interface WorkspaceHeaderProps {
   }[];
   onCreateProject: () => void;
   onInviteMember: () => void;
+  canEditWorkspace?: boolean;
+  onEditWorkspace?: () => void;
 }
 
 export const WorkspaceHeader = ({
@@ -21,6 +23,8 @@ export const WorkspaceHeader = ({
   members,
   onCreateProject,
   onInviteMember,
+  canEditWorkspace,
+  onEditWorkspace,
 }: WorkspaceHeaderProps) => {
   return (
     <div className="space-y-8">
@@ -37,6 +41,16 @@ export const WorkspaceHeader = ({
           </div>
 
           <div className="flex items-center gap-3 justify-between md:justify-start mb-4 md:mb-0">
+            {canEditWorkspace && onEditWorkspace && (
+              <Button
+                variant={"outline"}
+                onClick={onEditWorkspace}
+                aria-label="Edit workspace"
+              >
+                <Pencil className="size-4 mr-2" />
+                Edit
+              </Button>
+            )}
             <Button variant={"outline"} onClick={onInviteMember}>
               <UserPlus className="size-4 mr-2" />
               Invite

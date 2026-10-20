@@ -1,6 +1,6 @@
 import type { WorkspaceForm } from "@/components/workspace/create-workspace";
-import { fetchData, postData } from "@/lib/fetch-util";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { deleteData, fetchData, postData, updateData } from "@/lib/fetch-util";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useCreateWorkspace = () => {
   return useMutation({
@@ -26,6 +26,20 @@ export const useGetWorkspaceDetailsQuery = (workspaceId: string) => {
   return useQuery({
     queryKey: ["workspace", workspaceId, "details"],
     queryFn: async () => fetchData(`/workspaces/${workspaceId}`),
+  });
+};
+
+export const useDeleteWorkspaceMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (workspaceId: string) =>
+      deleteData(`/workspaces/${workspaceId}`),
+    onSuccess: () => {
+      // prefix-invalidates every ["workspace", id, ...] query
+      queryClient.invalidateQueries({ queryKey: ["workspace"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    },
   });
 };
 
@@ -60,5 +74,30 @@ export const useGenerateInviteLinkMutation = () => {
       role?: string;
       regenerate?: boolean;
     }) => postData(`/workspaces/${data.workspaceId}/invite-link`, data),
+  });
+};
+
+export const useUpdateWorkspaceMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      workspaceId: string;
+      name: string;
+      color: string;
+      description?: string;
+    }) =>
+      updateData(`/workspaces/${data.workspaceId}`, {
+        name: data.name,
+        color: data.color,
+        description: data.description,
+      }),
+    onSuccess: (_data, variables) => {
+      // prefix-invalidates ["workspace", id, "details"|"stats"] + projects
+      queryClient.invalidateQueries({
+        queryKey: ["workspace", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    },
   });
 };

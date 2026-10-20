@@ -1,5 +1,6 @@
 import { BackButton } from "@/components/back-button";
 import { Loader } from "@/components/loader";
+import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 import { CreateTaskDialog } from "@/components/task/create-task-dialog";
 import { TaskCard } from "@/components/task/task-card";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +9,12 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectTasksQuery } from "@/hooks/use-task";
 import { useUserProjectRole } from "@/hooks/use-project";
+import { useGetWorkspaceDetailsQuery } from "@/hooks/use-workspace";
+import { useAuth } from "@/provider/auth-context";
+import { canManageProject } from "@/lib/permissions";
 import { getProjectProgress } from "@/lib";
 import type { Project, Task, TaskStatus } from "@/types";
+import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
 
@@ -20,7 +25,10 @@ const ProjectDetails = () => {
   }>();
 
   const [isCreateTask, setIsCreateTask] = useState(false);
+  const [isEditProject, setIsEditProject] = useState(false);
   const [taskFilter, setTaskFilter] = useState<TaskStatus | "All">("All");
+
+  const { user } = useAuth();
 
   const { data, isLoading } = useProjectTasksQuery(projectId!) as {
     data: {
@@ -30,8 +38,27 @@ const ProjectDetails = () => {
     isLoading: boolean;
   };
 
-  const userRole = useUserProjectRole(data?.project);
-  const canCreateTask = userRole === "manager" || userRole === "contributor";
+  const userProjectRole = useUserProjectRole(data?.project);
+  const canCreateTask =
+    userProjectRole === "manager" || userProjectRole === "contributor";
+
+  // C3 (D2): edit gating = project manager OR workspace owner/admin.
+  // Same details query the edit dialog uses — shared cache, one fetch.
+  const { data: workspaceDetails } = useGetWorkspaceDetailsQuery(
+    workspaceId || ""
+  ) as {
+    data?: {
+      members?: {
+        _id?: string;
+        user: { _id: string };
+        role: string;
+      }[];
+    };
+  };
+  const workspaceRole = workspaceDetails?.members?.find(
+    (m) => m.user._id === user?._id?.toString()
+  )?.role;
+  const canManage = canManageProject(userProjectRole, workspaceRole);
 
   if (isLoading) {
     return (
@@ -77,6 +104,17 @@ const ProjectDetails = () => {
 
           {canCreateTask && (
             <Button onClick={() => setIsCreateTask(true)}>Add Task</Button>
+          )}
+
+          {canManage && (
+            <Button
+              variant="outline"
+              onClick={() => setIsEditProject(true)}
+              aria-label="Edit project"
+            >
+              <Pencil className="size-4 mr-2" />
+              Edit
+            </Button>
           )}
         </div>
       </div>
@@ -140,6 +178,15 @@ const ProjectDetails = () => {
         onOpenChange={setIsCreateTask}
         projectId={projectId!}
       />
+
+      {data.project && workspaceId && (
+        <EditProjectDialog
+          project={data.project}
+          workspaceId={workspaceId}
+          isOpen={isEditProject}
+          onOpenChange={setIsEditProject}
+        />
+      )}
     </div>
   );
 };
