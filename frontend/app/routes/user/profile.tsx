@@ -18,8 +18,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { AvatarPicker } from "@/components/user/avatar-picker";
 import {
   useChangePassword,
   useUpdateUserProfile,
@@ -28,7 +29,7 @@ import {
 import { useAuth } from "@/provider/auth-context";
 import type { User } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Loader, Loader2 } from "lucide-react";
+import { AlertCircle, Loader, Loader2, Mail, UserRound } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -156,43 +157,61 @@ const Profile = () => {
           <CardDescription>Update your personal details.</CardDescription>
         </CardHeader>
         <CardContent>
+          {/* E5: identity block — avatar + name + email as text rows */}
+          <div className="flex items-center space-x-4 mb-6 pb-6 border-b">
+            <Avatar className="h-20 w-20">
+              <AvatarImage
+                src={
+                  profileForm.watch("profilePicture") || user?.profilePicture
+                }
+                alt={user?.name}
+              />
+              <AvatarFallback className="text-xl">
+                {user?.name?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <UserRound className="size-4 text-muted-foreground shrink-0" />
+                <span className="font-medium truncate">{user?.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="size-4 text-muted-foreground shrink-0" />
+                <span className="text-sm text-muted-foreground truncate">
+                  {user?.email}
+                </span>
+              </div>
+
+              <div className="pt-1">
+                <Popover modal={true}>
+                  <PopoverTrigger asChild>
+                    <Button type="button" size="sm" variant="outline">
+                      Change Avatar
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-80">
+                    <p className="text-sm font-medium mb-3">Choose an avatar</p>
+                    <AvatarPicker
+                      value={profileForm.watch("profilePicture")}
+                      onChange={(src) =>
+                        profileForm.setValue("profilePicture", src)
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Pick a sample avatar, then save changes below.
+                    </p>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+
           <Form {...profileForm}>
             <form
               onSubmit={profileForm.handleSubmit(handleProfileFormSubmit)}
               className="grid gap-4"
             >
-              <div className="flex items-center space-x-4 mb-6">
-                <Avatar className="h-20 w-20 bg-gray-600">
-                  <AvatarImage
-                    src={
-                      profileForm.watch("profilePicture") ||
-                      user?.profilePicture
-                    }
-                    alt={user?.name}
-                  />
-                  <AvatarFallback className="text-xl">
-                    {user?.name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      document.getElementById("avatar-upload")?.click()
-                    }
-                  >
-                    Change Avatar
-                  </Button>
-                </div>
-              </div>
               <FormField
                 control={profileForm.control}
                 name="name"
@@ -206,18 +225,6 @@ const Profile = () => {
                   </FormItem>
                 )}
               />
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  defaultValue={user?.email}
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">
-                  Your email address cannot be changed.
-                </p>
-              </div>
               <Button
                 type="submit"
                 className="w-fit"

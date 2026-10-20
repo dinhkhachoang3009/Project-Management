@@ -1,7 +1,7 @@
 import { useAuth } from "@/provider/auth-context";
 import type { Workspace } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Bell, PlusCircle } from "lucide-react";
+import { Bell, ChevronDown, PlusCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 
 interface HeaderProps {
@@ -47,7 +48,7 @@ export const Header = ({
   };
 
   return (
-    <div className="bg-background sticky top-0 z-40 border-b">
+    <div className="bg-background border-b">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -60,7 +61,9 @@ export const Header = ({
                       name={selectedWorkspace.name}
                     />
                   )}
-                  <span className="font-medium">{selectedWorkspace?.name}</span>
+                  <span className="font-medium max-w-48 truncate inline-block">
+                    {selectedWorkspace?.name}
+                  </span>
                 </>
               ) : (
                 <span className="font-medium">Select Workspace</span>
@@ -96,26 +99,48 @@ export const Header = ({
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Bell />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Notifications">
+                <Bell />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64">
+              <p className="text-sm font-medium">Notifications</p>
+              <p className="text-sm text-muted-foreground">
+                Notifications are under development.
+              </p>
+            </PopoverContent>
+          </Popover>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="rounded-full border w-9 h-9 flex items-center justify-center">
+              <button
+                className="rounded-full border h-9 min-w-9 flex items-center justify-center gap-1.5 px-2"
+                aria-label="Account menu"
+              >
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user?.profilePicture} alt={user?.name} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {user?.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+                <span className="hidden sm:inline text-sm font-medium max-w-32 truncate">
+                  {user?.name}
+                </span>
+                <ChevronDown className="hidden sm:inline size-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel className="font-normal">
+                <div className="text-sm font-medium">{user?.name}</div>
+                <div className="text-xs text-muted-foreground truncate max-w-48">
+                  {user?.email}
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/user/profile">Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
