@@ -42,6 +42,28 @@ const validateProjectMembers = async (projectMembers, workspaceId) => {
   return { error: null };
 };
 
+// D2 (decided 2026-10-21): project lifecycle control (edit/delete) belongs
+// to the project manager OR the workspace owner/admin — an owner/admin does
+// not need to be a project member to take over a project. A missing
+// workspace doc (legacy orphan) only allows the manager path.
+const resolveProjectLifecycleRole = async (project, userId) => {
+  const userProjectRole = project.members.find(
+    (member) => member.user.toString() === userId.toString()
+  )?.role;
+
+  if (userProjectRole === "manager") return { allowed: true };
+
+  const workspace = await Workspace.findById(project.workspace, "members");
+  if (workspace) {
+    const wsRole = workspace.members.find(
+      (member) => member.user.toString() === userId.toString()
+    )?.role;
+    if (["owner", "admin"].includes(wsRole)) return { allowed: true };
+  }
+
+  return { allowed: false };
+};
+
 const createProject = async (req, res) => {
   try {
     const { workspaceId } = req.params;
@@ -164,19 +186,14 @@ const updateProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const userProjectRole = project.members.find(
-      (member) => member.user.toString() === req.user._id.toString()
-    )?.role;
+    const { allowed } = await resolveProjectLifecycleRole(
+      project,
+      req.user._id
+    );
 
-    if (!userProjectRole) {
+    if (!allowed) {
       return res.status(403).json({
-        message: "You are not a member of this project",
-      });
-    }
-
-    if (userProjectRole !== "manager") {
-      return res.status(403).json({
-        message: "Only project managers can update project details",
+        message: "Only a project manager or workspace owner/admin can update this project",
       });
     }
 
@@ -221,13 +238,14 @@ const deleteProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const userMember = project.members.find(
-      (member) => member.user.toString() === req.user._id.toString()
+    const { allowed } = await resolveProjectLifecycleRole(
+      project,
+      req.user._id
     );
 
-    if (!userMember || userMember.role !== "manager") {
+    if (!allowed) {
       return res.status(403).json({
-        message: "Only project manager can delete this project",
+        message: "Only a project manager or workspace owner/admin can delete this project",
       });
     }
 

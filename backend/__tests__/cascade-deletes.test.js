@@ -30,6 +30,7 @@ describe("cascade deletes (B2)", () => {
   let stopTestDb;
   let owner;
   let manager;
+  let plainMember;
   let workspace;
   let projectA;
   let projectB;
@@ -47,6 +48,7 @@ describe("cascade deletes (B2)", () => {
 
     owner = await createUser("B2 Owner", "b2-owner@test.local");
     manager = await createUser("B2 Manager", "b2-manager@test.local");
+    plainMember = await createUser("B2 Plain", "b2-plain@test.local");
 
     // a workspace whose data must survive projectA's deletion
     keepWorkspaceId = owner._id; // placeholder, replaced below
@@ -56,6 +58,7 @@ describe("cascade deletes (B2)", () => {
       members: [
         { user: owner._id, role: "owner" },
         { user: manager._id, role: "admin" },
+        { user: plainMember._id, role: "member" },
       ],
     });
     keepWorkspaceId = workspace._id;
@@ -67,6 +70,7 @@ describe("cascade deletes (B2)", () => {
       members: [
         { user: manager._id, role: "manager" },
         { user: owner._id, role: "contributor" },
+        { user: plainMember._id, role: "contributor" },
       ],
     });
     projectB = await Project.create({
@@ -99,12 +103,14 @@ describe("cascade deletes (B2)", () => {
     await stopTestDb();
   });
 
-  test("deleteProject as non-manager → 403, nothing deleted", async () => {
+  test("deleteProject as plain member → 403, nothing deleted", async () => {
     const res = await request(app)
       .delete(`/api-v1/projects/${projectA._id}`)
-      .set("Authorization", bearerFor(owner)); // owner is only a contributor here
+      .set("Authorization", bearerFor(plainMember)); // plain ws member, project contributor only — no lifecycle right under D2
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ message: "Only project manager can delete this project" });
+    expect(res.body).toEqual({
+      message: "Only a project manager or workspace owner/admin can delete this project",
+    });
 
     expect(await Task.countDocuments({ project: projectA._id })).toBe(2);
     expect(await ActivityLog.countDocuments({ resourceId: projectA._id })).toBe(1);
