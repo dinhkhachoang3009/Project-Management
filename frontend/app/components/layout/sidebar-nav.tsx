@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import type { Workspace } from "@/types";
 import type { LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useLocation, useNavigate } from "react-router";
+import { NavLink } from "react-router";
+import { buttonVariants } from "@/components/ui/button";
 
 interface SidebarNavProps extends React.HtmlHTMLAttributes<HTMLElement> {
   items: {
@@ -15,6 +15,19 @@ interface SidebarNavProps extends React.HtmlHTMLAttributes<HTMLElement> {
   className?: string;
 }
 
+// F4: most dashboard pages carry the workspace context via ?workspaceId=
+// (the old Button+navigate() call did the same), but /workspaces resolves
+// its workspace from the path itself, so it never takes the query.
+export const buildSidebarHref = (
+  href: string,
+  currentWorkspace: Workspace | null
+): string => {
+  if (href === "/workspaces" || !currentWorkspace?._id) {
+    return href;
+  }
+  return `${href}?workspaceId=${currentWorkspace._id}`;
+};
+
 export const SidebarNav = ({
   items,
   isCollapsed,
@@ -22,34 +35,22 @@ export const SidebarNav = ({
   currentWorkspace,
   ...props
 }: SidebarNavProps) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
   return (
     <nav className={cn("flex flex-col gap-y-2", className)} {...props}>
       {items.map((el) => {
         const Icon = el.icon;
-        const isActive = location.pathname === el.href;
-
-        const handleClick = () => {
-          if (el.href === "/workspaces") {
-            navigate(el.href);
-          } else if (currentWorkspace && currentWorkspace._id) {
-            navigate(`${el.href}?workspaceId=${currentWorkspace._id}`);
-          } else {
-            navigate(el.href);
-          }
-        };
 
         return (
-          <Button
+          <NavLink
             key={el.href}
-            variant={isActive ? "outline" : "ghost"}
-            className={cn(
-              "justify-start",
-              isActive && "bg-blue-800/20 text-blue-600 font-medium"
-            )}
-            onClick={handleClick}
+            to={buildSidebarHref(el.href, currentWorkspace)}
+            className={({ isActive }) =>
+              cn(
+                buttonVariants({ variant: isActive ? "outline" : "ghost" }),
+                "justify-start",
+                isActive && "bg-primary/10 text-primary font-medium"
+              )
+            }
           >
             <Icon className="mr-2 size-4" />
             {isCollapsed ? (
@@ -57,7 +58,7 @@ export const SidebarNav = ({
             ) : (
               el.title
             )}
-          </Button>
+          </NavLink>
         );
       })}
     </nav>
