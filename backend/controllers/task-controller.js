@@ -251,37 +251,6 @@ const updateTaskDescription = async (req, res) => {
   }
 };
 
-const updateTask = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const { title, description } = req.body;
-
-    const { task, error, status } = await checkTaskPermission(
-      taskId,
-      req.user._id,
-      ["manager", "contributor"]
-    );
-    if (error) return res.status(status).json({ message: error });
-
-    if (title !== undefined) task.title = title;
-    if (description !== undefined) task.description = description;
-
-    await task.save();
-
-    recordActivity(
-      req.user._id,
-      "updated_task",
-      "Task",
-      task._id,
-      { fields: Object.keys(req.body) }
-    );
-
-    res.status(200).json(task);
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
 const updateTaskStatus = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -541,7 +510,6 @@ export {
   createTask,
   getProjectTasks,
   getTaskById,
-  updateTask,
   updateTaskTitle,
   updateTaskDescription,
   updateTaskStatus,

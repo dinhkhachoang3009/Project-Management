@@ -14,9 +14,6 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String },
     isEmailVerified: { type: Boolean, default: false },
     lastLogin: { type: Date },
-    is2FAEnabled: { type: Boolean, default: false },
-    twoFAOtp: { type: String, select: false },
-    twoFAOtpExpires: { type: Date, select: false },
   },
   { timestamps: true },
 );

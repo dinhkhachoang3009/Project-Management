@@ -7,7 +7,6 @@ export interface User {
   updatedAt: Date;
   profilePicture?: string;
   lastLogin?: Date;
-  is2FAEnabled?: boolean;
 }
 
 export interface Workspace {
@@ -121,15 +120,10 @@ export type ActionType =
   | "completed_task"
   | "created_project"
   | "updated_project"
-  | "completed_project"
   | "created_workspace"
   | "updated_workspace"
   | "added_comment"
-  | "added_member"
-  | "removed_member"
-  | "joined_workspace"
-  | "transferred_workspace_ownership"
-  | "added_attachment";
+  | "joined_workspace";
 
 export interface ActivityLog {
   _id: string;

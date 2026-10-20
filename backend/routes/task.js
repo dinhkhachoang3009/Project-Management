@@ -9,7 +9,6 @@ import {
   getProjectTasks,
   getTaskById,
   updateSubTask,
-  updateTask,
   updateTaskAssignees,
   updateTaskDescription,
   updateTaskPriority,
@@ -98,19 +97,6 @@ router.put(
     body: z.object({ description: z.string() }),
   }),
   updateTaskDescription
-);
-
-router.put(
-  "/:taskId",
-  authMiddleware,
-  validateRequest({
-    params: z.object({ taskId: z.string() }),
-    body: z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-    }),
-  }),
-  updateTask
 );
 
 router.put(

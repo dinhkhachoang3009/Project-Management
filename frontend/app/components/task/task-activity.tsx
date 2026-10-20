@@ -25,7 +25,6 @@ const getActivityIcon = (action: string) => {
     case "added_comment":
       return <MessageSquare className="size-4" />;
     case "joined_workspace":
-    case "added_member":
       return <UserPlus className="size-4" />;
     default:
       return <Circle className="size-4" />;
