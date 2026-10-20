@@ -15,6 +15,11 @@ import {
 import { useState } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarNav } from "./sidebar-nav";
 
@@ -80,18 +85,24 @@ export const SidebarComponent = ({
           {isCollapsed && <Wrench className="size-6 text-blue-600" />}
         </Link>
 
-        <Button
-          variant={"ghost"}
-          size="icon"
-          className="ml-auto hidden md:block"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {isCollapsed ? (
-            <ChevronsRight className="size-4" />
-          ) : (
-            <ChevronsLeft className="size-4" />
-          )}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={"ghost"}
+              size="icon"
+              className="ml-auto hidden md:block"
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
+              {isCollapsed ? (
+                <ChevronsRight className="size-4" />
+              ) : (
+                <ChevronsLeft className="size-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Toggle sidebar</TooltipContent>
+        </Tooltip>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-2">
@@ -107,6 +118,7 @@ export const SidebarComponent = ({
         <Button
           variant={"ghost"}
           size={isCollapsed ? "icon" : "default"}
+          aria-label="Logout"
           onClick={logout}
         >
           <LogOut className={cn("size-4", isCollapsed && "mr-2")} />

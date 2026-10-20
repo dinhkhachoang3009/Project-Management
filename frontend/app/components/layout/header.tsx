@@ -14,6 +14,11 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 
 interface HeaderProps {
@@ -114,23 +119,28 @@ export const Header = ({
           </Popover>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="rounded-full border h-9 min-w-9 flex items-center justify-center gap-1.5 px-2"
-                aria-label="Account menu"
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={user?.profilePicture} alt={user?.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden sm:inline text-sm font-medium max-w-32 truncate">
-                  {user?.name}
-                </span>
-                <ChevronDown className="hidden sm:inline size-4 text-muted-foreground" />
-              </button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="rounded-full border h-9 min-w-9 flex items-center justify-center gap-1.5 px-2"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline text-sm font-medium max-w-32 truncate">
+                    {user?.name}
+                  </span>
+                  <ChevronDown className="hidden sm:inline size-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>{user?.name}</TooltipContent>
+          </Tooltip>
 
             <DropdownMenuContent align="end">
               <DropdownMenuLabel className="font-normal">
