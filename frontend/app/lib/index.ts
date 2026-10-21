@@ -26,6 +26,19 @@ export const getTaskStatusColor = (status: ProjectStatus) => {
   }
 };
 
+// F6: single source of truth for task-priority chip colors. Call sites
+// used to carry three different hand-rolled priority palettes.
+export const getTaskPriorityColor = (priority: string | undefined): string => {
+  switch (priority) {
+    case "High":
+      return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
+    case "Medium":
+      return "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
+
 export const getProjectProgress = (tasks: { status: TaskStatus }[]) => {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task?.status === "Done").length;

@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getTaskPriorityColor } from "@/lib";
+import { NoDataFound } from "@/components/no-data-found";
 import { CheckCircle2, Circle } from "lucide-react";
 import { format } from "date-fns";
 
@@ -24,22 +26,21 @@ export const UpcomingTasks = ({ data }: { data: Task[] }) => {
 
       <CardContent className="space-y-4">
         {data.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No upcoming tasks yet
-          </p>
+          <NoDataFound
+            title="No upcoming tasks yet"
+            description="Tasks that are due soon will show up here."
+          />
         ) : (
           data.map((task) => (
             <Link
               to={`/workspaces/${workspaceId}/projects/${task.project}/tasks/${task._id}`}
               key={task._id}
-              className="flex items-start space-x-3 border-b pb-3 last:border-0"
+              className="flex items-start space-x-3 border-b pb-3 last:border-0 rounded-md hover:bg-muted/50"
             >
               <div
                 className={cn(
                   "mt-0.5 rounded-full p-1",
-                  task.priority === "High" && "bg-red-100 text-red-700",
-                  task.priority === "Medium" && "bg-yellow-100 text-yellow-700",
-                  task.priority === "Low" && "bg-gray-100 text-gray-700"
+                  getTaskPriorityColor(task.priority)
                 )}
               >
                 {task.status === "Done" ? (

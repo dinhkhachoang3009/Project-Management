@@ -15,6 +15,7 @@ import { InviteMemberDialog } from "@/components/workspace/invite-member";
 import { useGetWorkspaceDetailsQuery } from "@/hooks/use-workspace";
 import type { Workspace } from "@/types";
 import { UserPlus } from "lucide-react";
+import { NoDataFound } from "@/components/no-data-found";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -55,7 +56,7 @@ const Members = () => {
       </div>
     );
 
-  if (!data || !workspaceId) return <div>No workspace found</div>;
+  if (!data || !workspaceId) return <NoDataFound title="Workspace not found" description="Select or open a workspace to see its members." />;
 
   const filteredMembers = data?.members?.filter(
     (member) =>
@@ -102,10 +103,10 @@ const Members = () => {
                 {filteredMembers.map((member) => (
                   <div
                     key={member.user._id}
-                    className="flex flex-col md:flex-row items-center justify-between p-4 gap-3"
+                    className="flex flex-col md:flex-row items-center justify-between p-4 gap-3 hover:bg-muted/50"
                   >
                     <div className="flex items-center space-x-4">
-                      <Avatar className="bg-gray-500">
+                      <Avatar className="bg-muted">
                         <AvatarImage src={member.user.profilePicture} />
                         <AvatarFallback>
                           {member.user.name.charAt(0)}
@@ -113,7 +114,7 @@ const Members = () => {
                       </Avatar>
                       <div>
                         <p className="font-medium">{member.user.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {member.user.email}
                         </p>
                       </div>
@@ -143,7 +144,7 @@ const Members = () => {
             {filteredMembers.map((member) => (
               <Card key={member.user._id}>
                 <CardContent className="p-6 flex flex-col items-center text-center">
-                  <Avatar className="bg-gray-500 size-20 mb-4">
+                  <Avatar className="bg-muted size-20 mb-4">
                     <AvatarImage src={member.user.profilePicture} />
                     <AvatarFallback className="uppercase">
                       {member.user.name.substring(0, 2)}
@@ -154,7 +155,7 @@ const Members = () => {
                     {member.user.name}
                   </h3>
 
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-muted-foreground mb-4">
                     {member.user.email}
                   </p>
 

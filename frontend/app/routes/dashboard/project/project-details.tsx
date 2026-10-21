@@ -13,6 +13,7 @@ import { useGetWorkspaceDetailsQuery } from "@/hooks/use-workspace";
 import { useAuth } from "@/provider/auth-context";
 import { canManageProject } from "@/lib/permissions";
 import { getProjectProgress } from "@/lib";
+import { NoDataFound } from "@/components/no-data-found";
 import type { Project, Task, TaskStatus } from "@/types";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
@@ -69,7 +70,12 @@ const ProjectDetails = () => {
   }
 
   if (!data) {
-    return <div>Project not found</div>;
+    return (
+      <NoDataFound
+        title="Project not found"
+        description="The project may have been deleted, or you may not have access."
+      />
+    );
   }
 
   const { project, tasks } = data;
@@ -87,7 +93,7 @@ const ProjectDetails = () => {
             <h1 className="text-xl md:text-2xl font-bold">{project.title}</h1>
           </div>
           {project.description && (
-            <p className="text-sm text-gray-500">{project.description}</p>
+            <p className="text-sm text-muted-foreground">{project.description}</p>
           )}
         </div>
 
@@ -156,18 +162,6 @@ const ProjectDetails = () => {
           </div>
 
           <TabsContent value="all" className="m-0">
-            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
-          </TabsContent>
-
-          <TabsContent value="todo" className="m-0">
-            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
-          </TabsContent>
-
-          <TabsContent value="in-progress" className="m-0">
-            <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
-          </TabsContent>
-
-          <TabsContent value="done" className="m-0">
             <TaskBoard tasks={filteredTasks} readOnly={!canCreateTask} />
           </TabsContent>
         </Tabs>

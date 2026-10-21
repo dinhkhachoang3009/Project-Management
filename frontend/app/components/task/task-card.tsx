@@ -2,12 +2,12 @@ import type { Task, TaskStatus } from "@/types";
 import { useNavigate, useParams } from "react-router";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar, AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUpdateTaskStatus } from "@/hooks/use-task";
+import { getTaskPriorityColor } from "@/lib";
 import { toast } from "sonner";
 
 interface TaskCardProps {
@@ -45,13 +45,7 @@ export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <Badge
-            className={cn(
-              task.priority === "High" && "bg-red-500 text-white",
-              task.priority === "Medium" && "bg-orange-500 text-white",
-              task.priority === "Low" && "bg-slate-500 text-white"
-            )}
-          >
+          <Badge className={getTaskPriorityColor(task.priority)}>
             {task.priority}
           </Badge>
 
@@ -111,7 +105,7 @@ export const TaskCard = ({ task, readOnly }: TaskCardProps) => {
                 {task.assignees.slice(0, 5).map((member: any) => (
                   <Avatar
                     key={member._id}
-                    className="relative size-6 bg-gray-700 rounded-full border-2 border-background overflow-hidden"
+                    className="relative size-6 bg-muted rounded-full border-2 border-background overflow-hidden"
                     title={member.name}
                   >
                     <AvatarImage src={member.profilePicture} />

@@ -17,9 +17,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { NoDataFound } from "@/components/no-data-found";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetMyTasksQuery } from "@/hooks/use-task";
 import type { Task } from "@/types";
+import { getTaskPriorityColor } from "@/lib";
 import { format } from "date-fns";
 import { ArrowUpRight, CheckCircle, Clock, FilterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -232,13 +234,7 @@ const MyTasks = () => {
                             </Badge>
 
                             {task.priority && (
-                              <Badge
-                                variant={
-                                  task.priority === "High"
-                                    ? "destructive"
-                                    : "secondary"
-                                }
-                              >
+                              <Badge className={getTaskPriorityColor(task.priority)}>
                                 {task.priority}
                               </Badge>
                             )}
@@ -272,9 +268,10 @@ const MyTasks = () => {
                 })}
 
                 {sortedTasks?.length === 0 && (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    No tasks found
-                  </div>
+                  <NoDataFound
+                    title="No tasks found"
+                    description="Tasks assigned to you will show up here."
+                  />
                 )}
               </div>
             </CardContent>
@@ -318,11 +315,7 @@ const TaskColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => {
                 </p>
 
                 <div className="flex items-center mt-2 gap-2">
-                  <Badge
-                    variant={
-                      task.priority === "High" ? "destructive" : "secondary"
-                    }
-                  >
+                  <Badge className={getTaskPriorityColor(task.priority)}>
                     {task.priority}
                   </Badge>
 
@@ -338,9 +331,10 @@ const TaskColumn = ({ title, tasks }: { title: string; tasks: Task[] }) => {
         })}
 
         {tasks?.length === 0 && (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            No tasks found
-          </div>
+          <NoDataFound
+            title="No tasks found"
+            description="Tasks with this status will show up here."
+          />
         )}
       </CardContent>
     </Card>

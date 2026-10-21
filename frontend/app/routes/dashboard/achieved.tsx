@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useGetMyTasksQuery } from "@/hooks/use-task";
 import { buildTaskDetailUrl } from "@/lib/task-url";
+import { getTaskPriorityColor } from "@/lib";
+import { NoDataFound } from "@/components/no-data-found";
 import { Loader } from "@/components/loader";
 import type { Task } from "@/types";
 import { format } from "date-fns";
@@ -52,7 +54,7 @@ const Achieved = () => {
                 return (
                   <div
                     key={task._id}
-                    className="py-4 flex items-center justify-between"
+                    className="p-4 flex items-center justify-between hover:bg-muted/50"
                   >
                     <div>
                       {taskUrl ? (
@@ -70,7 +72,9 @@ const Achieved = () => {
                       )}
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline">{task.status}</Badge>
-                      <Badge variant="secondary">{task.priority}</Badge>
+                      <Badge className={getTaskPriorityColor(task.priority)}>
+                        {task.priority}
+                      </Badge>
                       <Badge variant="outline">Archived</Badge>
                     </div>
                   </div>
@@ -84,9 +88,10 @@ const Achieved = () => {
               })}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No archived tasks yet.
-            </p>
+            <NoDataFound
+              title="No archived tasks yet"
+              description="Tasks you archive will show up here."
+            />
           )}
         </CardContent>
       </Card>
