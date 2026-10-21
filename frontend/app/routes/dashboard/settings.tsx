@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useGetWorkspacesQuery, useGetWorkspaceQuery, useDeleteWorkspaceMutation } from "@/hooks/use-workspace";
+import { AppearanceSettings } from "@/components/settings/appearance-settings";
 import { UseDeleteProject } from "@/hooks/use-project";
 import { useAuth } from "@/provider/auth-context";
 import { getManageableProjects } from "@/lib/permissions";
@@ -127,9 +128,7 @@ const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            More appearance options coming soon.
-          </p>
+          <AppearanceSettings />
         </CardContent>
       </Card>
 
