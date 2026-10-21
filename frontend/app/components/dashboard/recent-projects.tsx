@@ -4,6 +4,7 @@ import { getProjectProgress, getTaskStatusColor } from "@/lib";
 import { Link, useSearchParams } from "react-router";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { NoDataFound } from "@/components/no-data-found";
 
 export const RecentProjects = ({ data }: { data: Project[] }) => {
   const [searchParams] = useSearchParams();
@@ -17,9 +18,10 @@ export const RecentProjects = ({ data }: { data: Project[] }) => {
 
       <CardContent className="space-y-4">
         {data.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No Recent project yet
-          </p>
+          <NoDataFound
+            title="No recent projects yet"
+            description="Projects in this workspace will show up here."
+          />
         ) : (
           data.map((project) => {
             const projectProgress = getProjectProgress(project.tasks);

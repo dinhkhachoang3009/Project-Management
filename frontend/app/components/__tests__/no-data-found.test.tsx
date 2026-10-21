@@ -34,4 +34,11 @@ describe('NoDataFound Component', () => {
     fireEvent.click(button);
     expect(mockAction).toHaveBeenCalledTimes(1);
   });
+
+  test('omits the button entirely when no CTA is given (F8)', () => {
+    render(<NoDataFound title="Empty" description="Nothing here yet" />);
+
+    expect(screen.getByText('Empty')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });

@@ -1,4 +1,5 @@
 import { Loader } from "@/components/loader";
+import { NoDataFound } from "@/components/no-data-found";
 import { CreateProjectDialog } from "@/components/project/create-project";
 import { EditWorkspaceDialog } from "@/components/workspace/edit-workspace-dialog";
 import { InviteMemberDialog } from "@/components/workspace/invite-member";
@@ -18,7 +19,12 @@ const WorkspaceDetails = () => {
   const { user } = useAuth();
 
   if (!workspaceId) {
-    return <div>No workspace found</div>;
+    return (
+      <NoDataFound
+        title="Workspace not found"
+        description="Select or open a workspace to see its projects."
+      />
+    );
   }
 
   const { data, isLoading } = useGetWorkspaceQuery(workspaceId) as {

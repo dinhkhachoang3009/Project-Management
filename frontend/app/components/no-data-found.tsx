@@ -4,8 +4,9 @@ import { Button } from "./ui/button";
 interface NoDataFoundProps {
   title: string;
   description: string;
-  buttonText: string;
-  buttonAction: () => void;
+  /** Optional CTA — omit for plain "not found"/empty states. */
+  buttonText?: string;
+  buttonAction?: () => void;
 }
 
 export const NoDataFound = ({
@@ -22,10 +23,12 @@ export const NoDataFound = ({
       <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
         {description}
       </p>
-      <Button onClick={buttonAction} className="mt-4">
-        <CirclePlus className="size-4 mr-2" />
-        {buttonText}
-      </Button>
+      {buttonText && buttonAction && (
+        <Button onClick={buttonAction} className="mt-4">
+          <CirclePlus className="size-4 mr-2" />
+          {buttonText}
+        </Button>
+      )}
     </div>
   );
 };

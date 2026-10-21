@@ -11,6 +11,7 @@ import { TaskTitle } from "@/components/task/task-title";
 import { Watchers } from "@/components/task/watchers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   useAchievedTaskMutation,
   useTaskByIdQuery,
@@ -19,6 +20,9 @@ import {
 import { useUserProjectRole } from "@/hooks/use-project";
 import { useAuth } from "@/provider/auth-context";
 import type { Project, Task } from "@/types";
+import { getTaskPriorityColor } from "@/lib";
+import { NoDataFound } from "@/components/no-data-found";
+import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff } from "lucide-react";
 import { useParams } from "react-router";
@@ -52,9 +56,10 @@ const TaskDetails = () => {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-2xl font-bold">Task not found</div>
-      </div>
+      <NoDataFound
+        title="Task not found"
+        description="The task may have been deleted, or you may not have access."
+      />
     );
   }
 
@@ -87,7 +92,7 @@ const TaskDetails = () => {
   };
 
   return (
-    <div className="container mx-auto p-0 py-4 md:px-4">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <div className="flex flex-col md:flex-row md:items-center">
           <BackButton />
@@ -136,18 +141,12 @@ const TaskDetails = () => {
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:flex-2">
-          <div className="bg-card rounded-lg p-6 shadow-sm mb-6">
+          <Card>
+            <CardContent className="p-6 mb-6">
             <div className="flex flex-col md:flex-row justify-between items-start mb-4">
               <div>
                 <Badge
-                  variant={
-                    task.priority === "High"
-                      ? "destructive"
-                      : task.priority === "Medium"
-                      ? "default"
-                      : "outline"
-                  }
-                  className="mb-2 capitalize"
+                  className={cn("mb-2 capitalize", getTaskPriorityColor(task.priority))}
                 >
                   {task.priority} Priority
                 </Badge>
@@ -203,7 +202,8 @@ const TaskDetails = () => {
               taskId={task._id}
               readOnly={isReadOnly}
             />
-          </div>
+            </CardContent>
+          </Card>
 
           <CommentSection taskId={task._id} />
 
