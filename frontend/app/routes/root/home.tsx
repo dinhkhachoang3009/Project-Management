@@ -74,23 +74,23 @@ const footerLinks = {
 
 export default function Homepage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
+      <nav className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
               <LayoutDashboard className="size-6 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">TaskManager</span>
+              <span className="text-xl font-bold text-foreground">TaskManager</span>
             </Link>
             <div className="flex items-center gap-3">
               <Link to="/sign-in">
-                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   Log in
                 </Button>
               </Link>
               <Link to="/sign-up">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   Get Started
                 </Button>
               </Link>
@@ -104,17 +104,17 @@ export default function Homepage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left */}
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-gray-900">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-foreground">
               Get more done with{" "}
               <span className="text-blue-600">TaskManager</span>
             </h1>
-            <p className="mt-5 text-lg text-gray-500 leading-relaxed">
+            <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
               The modern task management platform that helps teams organize,
               track, and complete work efficiently.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Link to="/sign-up">
-                <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
                   Try for Free
                 </Button>
               </Link>
@@ -122,13 +122,13 @@ export default function Homepage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/40"
                 >
                   See Features
                 </Button>
               </a>
             </div>
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500">
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-blue-600" />
                 No credit card required
@@ -146,7 +146,7 @@ export default function Homepage() {
 
           {/* Right - Dashboard Image */}
           <div className="relative flex justify-center mt-12 lg:mt-0">
-            <div className="relative rounded-xl border border-gray-200 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden bg-gray-50">
+            <div className="relative rounded-xl border border-border shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden bg-muted/40">
               {/* NOTE: Save your dashboard screenshot as frontend/public/dashboard-preview.png */}
               <img
                 src="/dashboard-preview.png"
@@ -157,7 +157,7 @@ export default function Homepage() {
                   target.style.display = "none";
                   const parent = target.parentElement;
                   if (parent) {
-                    parent.innerHTML = `<div class="flex items-center justify-center h-[360px] w-[580px] bg-gray-100 text-gray-400 text-sm">Add dashboard-preview.png to public folder</div>`;
+                    parent.innerHTML = `<div class="flex items-center justify-center h-[360px] w-[580px] bg-muted text-muted-foreground text-sm">Add dashboard-preview.png to public folder</div>`;
                   }
                 }}
               />
@@ -167,16 +167,16 @@ export default function Homepage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 md:py-28 bg-gray-50/50">
+      <section id="features" className="py-20 md:py-28 bg-muted/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-medium tracking-wide text-gray-500 mb-4">
+            <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground mb-4">
               Our Features
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Everything you need to manage tasks effectively
             </h2>
-            <p className="mt-4 text-lg text-gray-500">
+            <p className="mt-4 text-lg text-muted-foreground">
               Our powerful features help teams stay organized and deliver
               projects on time.
             </p>
@@ -186,15 +186,15 @@ export default function Homepage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="flex flex-col items-center text-center bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                className="flex flex-col items-center text-center bg-card rounded-2xl p-8 border border-border shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                   <feature.icon className="size-6" />
                 </div>
-                <h3 className="mt-5 text-lg font-semibold text-gray-900">
+                <h3 className="mt-5 text-lg font-semibold text-foreground">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm text-gray-500 leading-relaxed max-w-xs">
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed max-w-xs">
                   {feature.description}
                 </p>
               </div>
@@ -204,16 +204,16 @@ export default function Homepage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="py-20 md:py-28 bg-muted/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-medium tracking-wide text-gray-500 mb-4">
+            <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground mb-4">
               How It Works
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Simple process, powerful results
             </h2>
-            <p className="mt-4 text-lg text-gray-500">
+            <p className="mt-4 text-lg text-muted-foreground">
               Get started in minutes and see improved team productivity.
             </p>
           </div>
@@ -227,8 +227,8 @@ export default function Homepage() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                   <step.icon className="size-6" />
                 </div>
-                <h3 className="mt-5 text-lg font-semibold text-gray-900">{step.title}</h3>
-                <p className="mt-2 text-sm text-gray-500 leading-relaxed max-w-xs">
+                <h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed max-w-xs">
                   {step.description}
                 </p>
               </div>
@@ -249,7 +249,7 @@ export default function Homepage() {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/sign-up">
-              <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100 font-semibold">
+              <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-muted font-semibold">
                 Get Started Free
               </Button>
             </Link>
@@ -266,16 +266,16 @@ export default function Homepage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-14 bg-white">
+      <footer className="border-t border-border py-14 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             {/* Brand */}
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center gap-2">
                 <LayoutDashboard className="size-5 text-blue-600" />
-                <span className="font-bold text-lg text-gray-900">TaskManager</span>
+                <span className="font-bold text-lg text-foreground">TaskManager</span>
               </Link>
-              <p className="mt-3 text-sm text-gray-500 max-w-xs">
+              <p className="mt-3 text-sm text-muted-foreground max-w-xs">
                 Simplify task management and team collaboration.
               </p>
             </div>
@@ -283,11 +283,11 @@ export default function Homepage() {
             {/* Links */}
             {Object.entries(footerLinks).map(([category, links]) => (
               <div key={category}>
-                <h4 className="text-sm font-semibold text-gray-900">{category}</h4>
+                <h4 className="text-sm font-semibold text-foreground">{category}</h4>
                 <ul className="mt-4 space-y-2.5">
                   {links.map((link) => (
                     <li key={link}>
-                      <span className="text-sm text-gray-500 hover:text-gray-900 transition-colors cursor-pointer">
+                      <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                         {link}
                       </span>
                     </li>
@@ -297,15 +297,15 @@ export default function Homepage() {
             ))}
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500">
+          <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} TaskManager. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               <a
                 href="#"
                 aria-label="Facebook"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
@@ -314,7 +314,7 @@ export default function Homepage() {
               <a
                 href="#"
                 aria-label="Twitter"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -323,7 +323,7 @@ export default function Homepage() {
               <a
                 href="#"
                 aria-label="Instagram"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />

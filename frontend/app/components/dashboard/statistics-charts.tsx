@@ -20,6 +20,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { CHART_COLOR } from "@/lib/chart-tokens";
 import {
   Bar,
   BarChart,
@@ -63,21 +64,19 @@ export const StatisticsCharts = ({
             <ChartContainer
               className="h-[300px]"
               config={{
-                completed: { color: "#10b981" },
-                inProgress: { color: "#f59e0b" },
-                todo: { color: "#3b82f6" },
+                completed: { color: CHART_COLOR.completed },
+                inProgress: { color: CHART_COLOR.inProgress },
+                todo: { color: CHART_COLOR.todo },
               }}
             >
               <LineChart data={taskTrendsData}>
                 <XAxis
                   dataKey={"name"}
-                  stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -87,21 +86,21 @@ export const StatisticsCharts = ({
                 <Line
                   type="monotone"
                   dataKey={"completed"}
-                  stroke="#10b981"
+                  stroke="var(--color-completed)"
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="inProgress"
-                  stroke="#3b82f6"
+                  stroke="var(--color-inProgress)"
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="todo"
-                  stroke="#6b7280"
+                  stroke="var(--color-todo)"
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
@@ -127,9 +126,11 @@ export const StatisticsCharts = ({
             <ChartContainer
               className="h-[300px]"
               config={{
-                Completed: { color: "#10b981" },
-                "In Progress": { color: "#3b82f6" },
-                Planning: { color: "#f59e0b" },
+                Completed: { color: CHART_COLOR.Completed },
+                Planning: { color: CHART_COLOR.Planning },
+                "In Progress": { color: CHART_COLOR["In Progress"] },
+                "On Hold": { color: CHART_COLOR["On Hold"] },
+                Cancelled: { color: CHART_COLOR.Cancelled },
               }}
             >
               <PieChart>
@@ -142,13 +143,12 @@ export const StatisticsCharts = ({
                   innerRadius={60}
                   outerRadius={80}
                   paddingAngle={2}
-                  label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
-                  }
-                  labelLine={false}
                 >
                   {projectStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={`var(--color-${entry.name})`}
+                    />
                   ))}
                 </Pie>
                 <ChartTooltip />
@@ -173,9 +173,9 @@ export const StatisticsCharts = ({
             <ChartContainer
               className="h-[300px]"
               config={{
-                High: { color: "#ef4444" },
-                Medium: { color: "#f59e0b" },
-                Low: { color: "#6b7280" },
+                High: { color: CHART_COLOR.High },
+                Medium: { color: CHART_COLOR.Medium },
+                Low: { color: CHART_COLOR.Low },
               }}
             >
               <PieChart>
@@ -188,13 +188,12 @@ export const StatisticsCharts = ({
                   paddingAngle={2}
                   dataKey="value"
                   nameKey="name"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                  labelLine={false}
                 >
                   {taskPriorityData?.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={`var(--color-${entry.name})`}
+                    />
                   ))}
                 </Pie>
                 <ChartTooltip />
@@ -220,8 +219,8 @@ export const StatisticsCharts = ({
             <ChartContainer
               className="h-[300px]"
               config={{
-                completed: { color: "#3b82f6" },
-                total: { color: "red" },
+                completed: { color: CHART_COLOR.completed },
+                total: { color: CHART_COLOR.total },
               }}
             >
               <BarChart
@@ -231,13 +230,11 @@ export const StatisticsCharts = ({
               >
                 <XAxis
                   dataKey="name"
-                  stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -246,13 +243,13 @@ export const StatisticsCharts = ({
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar
                   dataKey="total"
-                  fill="#000"
+                  fill="var(--color-total)"
                   radius={[4, 4, 0, 0]}
                   name="Total Tasks"
                 />
                 <Bar
                   dataKey="completed"
-                  fill="#3b82f6"
+                  fill="var(--color-completed)"
                   radius={[4, 4, 0, 0]}
                   name="Completed Tasks"
                 />

@@ -36,7 +36,7 @@ const VerifyEmail = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-2xl font-bold">Verify Email</h1>
-      <p className="text-sm text-gray-500">Verifying your email...</p>
+      <p className="text-sm text-muted-foreground">Verifying your email...</p>
 
       <Card className="w-full max-w-md">
         {/* <CardHeader>
@@ -50,9 +50,9 @@ const VerifyEmail = () => {
           <div className="flex flex-col items-center justify-center py-6 ">
             {isVerifying ? (
               <>
-                <Loader className="w-10 h-10 text-gray-500 animate-spin" />
+                <Loader className="w-10 h-10 text-muted-foreground animate-spin" />
                 <h3 className="text-lg font-semibold">Verifying email...</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Please wait while we verify your email.
                 </p>
               </>
@@ -60,7 +60,7 @@ const VerifyEmail = () => {
               <>
                 <CheckCircle className="w-10 h-10 text-green-500" />
                 <h3 className="text-lg font-semibold">Email Verified</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Your email has been verified successfully.
                 </p>
                 <Link to="/sign-in" className="text-sm text-blue-500 mt-6">
@@ -73,7 +73,7 @@ const VerifyEmail = () => {
                 <h3 className="text-lg font-semibold">
                   Email Verification Failed
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Your email verification failed. Please try again.
                 </p>
 
