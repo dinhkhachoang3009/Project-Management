@@ -37,7 +37,8 @@ const createApp = () => {
     }),
   );
 
-  app.use(express.json());
+  // G7: explicit body limit (body-parser's entity errors map below)
+  app.use(express.json({ limit: "100kb" }));
 
   // Metrics middleware — đo request count + latency
   app.use(metricsMiddleware);
@@ -52,15 +53,27 @@ const createApp = () => {
   // http://localhost:5000/api-v1/
   app.use("/api-v1", routes);
 
-  //error handling middleware
-  app.use((err, req, res, next) => {
-    logger.error("Unhandled error", { error: err.message, stack: err.stack });
-    res.status(500).json({ message: "Internal Server Error" });
-  });
-
-  // not found middleware
+  // not found middleware — registered BEFORE the error handler (Express
+  // convention; unmatched requests get 404, bubbled errors still hit below)
   app.use((req, res, next) => {
     res.status(404).json({ message: "Not found" });
+  });
+
+  //error handling middleware — G7: universal { message } contract
+  app.use((err, req, res, next) => {
+    if (err.name === "ZodError") {
+      return res
+        .status(400)
+        .json({ message: err.issues?.[0]?.message || "Invalid request" });
+    }
+    if (err.type === "entity.too.large") {
+      return res.status(413).json({ message: "Request body too large" });
+    }
+    if (err.type === "entity.parse.failed") {
+      return res.status(400).json({ message: "Malformed JSON body" });
+    }
+    logger.error("Unhandled error", { error: err.message, stack: err.stack });
+    res.status(500).json({ message: "Internal Server Error" });
   });
 
   return app;

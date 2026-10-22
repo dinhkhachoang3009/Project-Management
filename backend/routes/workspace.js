@@ -1,5 +1,5 @@
 import express from "express";
-import { validateRequest } from "zod-express-middleware";
+import { validateRequest } from "../libs/request-validation.js";
 import {
   acceptGenerateInvite,
   acceptInviteByToken,

@@ -1,6 +1,6 @@
 import express from "express";
 import authMiddleware from "../middleware/auth-middleware.js";
-import { validateRequest } from "zod-express-middleware";
+import { validateRequest } from "../libs/request-validation.js";
 import { z } from "zod";
 import {
   addSubTask,
