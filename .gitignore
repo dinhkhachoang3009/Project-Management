@@ -12,3 +12,4 @@ coverage/
 Opencode-Linux/
 AGENTS.md
 .opencode/
+.metrics-token
