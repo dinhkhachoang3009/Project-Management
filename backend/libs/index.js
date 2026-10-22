@@ -1,4 +1,5 @@
 import ActivityLog from "../models/activity.js";
+import logger from "../libs/logger.js";
 
 const recordActivity = async (
   userId,
@@ -16,7 +17,11 @@ const recordActivity = async (
       details,
     });
   } catch (error) {
-    console.log(error);
+    // G12: fire-and-forget by contract; never let logging a failure throw
+    logger.error("Activity log failed", {
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import logger from "../libs/logger.js";
 
 dotenv.config();
 
@@ -25,16 +26,20 @@ const sendEmail = async (to, subject, html) => {
 
     if (!response.ok) {
       const body = await response.text();
-      console.error(
-        `Error sending email: Brevo API ${response.status} - ${body}`
-      );
+      logger.error("Brevo email send failed", {
+        status: response.status,
+        body,
+      });
       return false;
     }
 
-    console.log("Email sent successfully");
+    logger.info("Email sent successfully");
     return true;
   } catch (error) {
-    console.error("Error sending email:", error);
+    logger.error("Email send threw", {
+      error: error.message,
+      stack: error.stack,
+    });
     return false;
   }
 };
