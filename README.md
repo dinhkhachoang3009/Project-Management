@@ -25,7 +25,7 @@
 | 7 | **Theo dõi (Watch)** — Theo dõi task để nhận cập nhật | Watch tasks to receive updates |
 | 8 | **Lưu trữ (Archive)** — Lưu trữ task/dự án thay vì xóa vĩnh viễn | Archive tasks/projects instead of permanent deletion |
 | 9 | **Dashboard & Biểu đồ** — Thống kê task trends, project status, task priority, workspace productivity | Dashboard with task trends, project status, priority, and productivity charts |
-| 10 | **Xác thực Email** — Đăng ký tài khoản yêu cầu xác thực email qua SendGrid | Email verification required for registration via SendGrid |
+| 10 | **Xác thực Email** — Đăng ký tài khoản yêu cầu xác thực email qua Brevo | Email verification required for registration via Brevo |
 | 11 | **Quên mật khẩu** — Gửi email reset password với token có hạn 15 phút | Forgot password flow with 15-minute reset token |
 | 12 | **Bảo mật** — Tích hợp Arcjet chống bot, rate limiting, validate email | Arcjet integration for bot detection, rate limiting, and email validation |
 | 13 | **Logging** — Ghi log bằng Winston với format JSON, timestamp, level | Structured JSON logging with Winston |
@@ -43,7 +43,7 @@
 | JWT | Authentication tokens |
 | bcrypt | Password hashing |
 | Zod + zod-express-middleware | Schema validation |
-| SendGrid | Transactional emails |
+| Brevo | Transactional emails |
 | Arcjet | Security (bot detection, rate limiting) |
 | Winston | Structured logging (JSON, timestamp, levels) |
 | prom-client | Prometheus metrics collection |
@@ -139,7 +139,7 @@ Project-Management/
 │   │   └── auth-middleware.js      # JWT verification
 │   ├── libs/
 │   │   ├── index.js                # Activity recording helper
-│   │   ├── send-email.js           # SendGrid wrapper
+│   │   ├── send-email.js           # Brevo wrapper
 │   │   ├── arcjet.js               # Arcjet security config
 │   │   ├── validate-schema.js      # Zod schemas
 │   │   ├── logger.js               # Winston logger
@@ -194,7 +194,7 @@ Project-Management/
 │       ├── favicon.ico
 │       └── dashboard-preview.png
 │
-├── docker-compose.yml              # Full stack: BE + FE + MongoDB + Prometheus + Grafana
+├── docker-compose.yml              # Full stack: BE + FE + Prometheus + Grafana
 ├── prometheus.yml                  # Prometheus scrape config
 ├── sonar-project.properties        # SonarCloud config
 ├── DEVOPS_PLAN.md                # DevOps implementation plan (internal)
@@ -209,14 +209,14 @@ Project-Management/
 - **Node.js** >= 20.0.0
 - **Docker & Docker Compose** (khuyến nghị — chạy full stack nhanh nhất)
 - **MongoDB** (nếu chạy manual — local hoặc MongoDB Atlas)
-- **SendGrid account** (để gửi email xác thực / for sending verification emails)
+- **Brevo account** (để gửi email xác thực / for sending verification emails)
 - **Arcjet account** (bảo mật / for security)
 
 ---
 
 ### 🔥 Cách 1: Docker Compose (Khuyến nghị) / Method 1: Docker Compose (Recommended)
 
-Chạy toàn bộ stack — MongoDB, Backend, Frontend, Prometheus, Grafana — chỉ với 1 lệnh:
+Chạy toàn bộ stack — Backend, Frontend, Prometheus, Grafana — chỉ với 1 lệnh:
 
 ```bash
 # 1. Clone repository
@@ -229,7 +229,13 @@ cp frontend/.env.docker.example frontend/.env.docker
 
 # 3. Edit backend/.env.docker with your real credentials:
 #    JWT_SECRET=your-jwt-secret
-#    SEND_GRID_API=your-sendgrid-api-key
+#    BREVO_API_KEY=your-brevo-api-key
+#    METRICS_TOKEN=your-metrics-bearer-token
+#  (IMPORTANT: the SAME token must sit in the local ./.metrics-token file
+#   which compose mounts into the Prometheus scraper)
+
+# 3b. All stack ports are bound to 127.0.0.1 (this machine only).
+#  Grafana login stays admin/admin as before.
 #    FROM_EMAIL=your-email@example.com
 #    ARCJET_KEY=your-arcjet-key
 
@@ -253,7 +259,6 @@ docker-compose down -v
 | Backend API | http://localhost:5000 |
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3002 (admin/admin) |
-| MongoDB | localhost:27017 |
 
 ---
 
@@ -286,7 +291,7 @@ PORT=5000
 MONGO_URI=mongodb+srv://your-user:your-password@cluster.mongodb.net/TaskManager_DB
 FRONTEND_URL=http://localhost:5173
 JWT_SECRET=your-super-secret-jwt-key
-SEND_GRID_API=SG.your-sendgrid-api-key
+BREVO_API_KEY=your-brevo-api-key
 FROM_EMAIL=your-email@example.com
 ARCJET_ENV=development
 ARCJET_KEY=ajkey_your-arcjet-key
@@ -563,7 +568,7 @@ Tất cả API đều có prefix `/api-v1`. / All APIs are prefixed with `/api-v
    - Arcjet kiểm tra email hợp lệ (chặn email rác / disposable)
    - Mật khẩu được hash bằng bcrypt
    - Tạo JWT verification token (hạn 1 giờ)
-   - Gửi email xác thực qua SendGrid
+   - Gửi email xác thực qua Brevo
 
 2. **Xác thực email / Verify Email**
    - Người dùng click link trong email
@@ -705,7 +710,7 @@ terraform apply
 | `MONGO_URI` | Chuỗi kết nối MongoDB |
 | `JWT_SECRET` | Secret key để sign JWT |
 | `FRONTEND_URL` | URL frontend (dùng cho CORS và link email) |
-| `SEND_GRID_API` | API key SendGrid |
+| `BREVO_API_KEY` | API key Brevo |
 | `FROM_EMAIL` | Email gửi đi |
 | `ARCJET_KEY` | API key Arcjet |
 | `ARCJET_ENV` | Môi trường Arcjet (development / production) |
@@ -714,10 +719,10 @@ terraform apply
 | Biến | Mô tả |
 |------|-------|
 | `PORT` | 5000 |
-| `MONGO_URI` | `mongodb://mongo:27017/taskmanager` (Docker network) |
+| `MONGO_URI` | `your MONGODB ATLAS connection string` |
 | `FRONTEND_URL` | `http://localhost:3000` |
 | `JWT_SECRET` | Your secret |
-| `SEND_GRID_API` | Your SendGrid key |
+| `BREVO_API_KEY` | Your Brevo key |
 | `FROM_EMAIL` | Your email |
 | `ARCJET_KEY` | Your Arcjet key |
 | `ARCJET_ENV` | development |
