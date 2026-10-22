@@ -61,6 +61,14 @@ describe("workspace create/edit/list (H2d)", () => {
     expect(String(res.body.owner)).toBe(String(member._id));
     expect(res.body.members).toHaveLength(1);
     expect(res.body.members[0].role).toBe("owner");
+
+    const { default: ActivityLog } = await import("../models/activity.js");
+    expect(
+      await ActivityLog.countDocuments({
+        user: member._id,
+        action: "created_workspace",
+      })
+    ).toBe(1);
   });
 
   test("GET /workspaces lists only member workspaces", async () => {

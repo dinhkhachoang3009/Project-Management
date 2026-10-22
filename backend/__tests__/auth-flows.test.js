@@ -32,7 +32,7 @@ const PASSWORD = "KnownPass123";
 
 const tokenFromEmailCall = () => {
   const html = sendEmail.mock.calls.at(-1)[2];
-  return /token=([^"<]+)/.exec(html)[1];
+  return /[?&]token=([^&"<>]+)/.exec(html)[1];
 };
 
 describe("auth flows (H2b)", () => {
@@ -170,7 +170,10 @@ describe("auth flows (H2b)", () => {
     const unknown = await agent
       .post("/api-v1/auth/reset-password-request")
       .send({ email: "ghost-h2b@test.local" });
-    expect(unknown.status).toBe(200); // anti-enumeration
+    expect(unknown.status).toBe(200);
+    // anti-enumeration: one identical generic message for both
+    expect(unknown.body.message).toBe(known.body.message);
+    expect(known.body.message).not.toBe("");
   });
 
   test("happy reset: mismatch confirm 400; matching 200; new password lives", async () => {

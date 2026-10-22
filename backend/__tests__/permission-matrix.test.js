@@ -26,16 +26,26 @@ const agent = request(app);
 // If a cell disagrees with the code, STOP and ledger it — never loosen
 // the test to make it pass.
 
-// combos: [label, wsRole|null, projectRole|null]
+// combos: [label, wsRole|null, projectRole|null] — full grid:
+// 4 ws roles x 3 project roles + 4 ws-only + 1 outsider
 const COMBOS = [
   ["outsider", null, null],
-  ["ws owner, project outsider", "owner", null],
-  ["ws admin, project outsider", "admin", null],
-  ["ws member, project outsider", "member", null],
-  ["ws viewer, project outsider", "viewer", null],
+  ["ws owner only", "owner", null],
+  ["ws admin only", "admin", null],
+  ["ws member only", "member", null],
+  ["ws viewer only", "viewer", null],
+  ["ws owner + project manager", "owner", "manager"],
+  ["ws owner + project contributor", "owner", "contributor"],
+  ["ws owner + project viewer", "owner", "viewer"],
+  ["ws admin + project manager", "admin", "manager"],
+  ["ws admin + project contributor", "admin", "contributor"],
+  ["ws admin + project viewer", "admin", "viewer"],
   ["ws member + project manager", "member", "manager"],
   ["ws member + project contributor", "member", "contributor"],
   ["ws member + project viewer", "member", "viewer"],
+  ["ws viewer + project manager", "viewer", "manager"],
+  ["ws viewer + project contributor", "viewer", "contributor"],
+  ["ws viewer + project viewer", "viewer", "viewer"],
 ];
 
 const expectFor = (wsRole, projectRole) => {
@@ -110,57 +120,48 @@ describe("permission matrix (H2e)", () => {
     });
     taskId = task._id.toString();
 
-    tokens.set("ws owner + project viewer", tok(owner._id));
-    ids.set("ws owner + project viewer", owner._id);
+    const wsRoles = { owner: "owner", admin: "admin", member: "member", viewer: "viewer" };
 
     for (const label of [
       "outsider",
-      "ws owner, project outsider",
-      "ws admin, project outsider",
-      "ws member, project outsider",
-      "ws viewer, project outsider",
+      "ws owner only",
+      "ws admin only",
+      "ws member only",
+      "ws viewer only",
+      "ws owner + project manager",
+      "ws owner + project contributor",
+      "ws owner + project viewer",
+      "ws admin + project manager",
+      "ws admin + project contributor",
+      "ws admin + project viewer",
       "ws member + project manager",
       "ws member + project contributor",
       "ws member + project viewer",
+      "ws viewer + project manager",
+      "ws viewer + project contributor",
+      "ws viewer + project viewer",
     ]) {
       const slug = label.replace(/[^a-z]+/gi, "-");
       const u = await createUser(`M ${slug}`, `mat-${slug}@test.local`);
       tokens.set(label, tok(u._id));
       ids.set(label, u._id);
 
-      // ws roles
-      if (label.includes("ws admin")) {
+      // ws role (from "ws <role>")
+      const wsRole = label.match(/ws (owner|admin|member|viewer)/)?.[1];
+      if (wsRole) {
         await Workspace.findByIdAndUpdate(wsId, {
-          $push: { members: { user: u._id, role: "admin" } },
-        });
-      } else if (label.includes("ws member")) {
-        await Workspace.findByIdAndUpdate(wsId, {
-          $push: { members: { user: u._id, role: "member" } },
-        });
-      } else if (label.includes("ws viewer")) {
-        await Workspace.findByIdAndUpdate(wsId, {
-          $push: { members: { user: u._id, role: "viewer" } },
-        });
-      } else if (label.includes("ws owner")) {
-        await Workspace.findByIdAndUpdate(wsId, {
-          $push: { members: { user: u._id, role: "owner" } },
+          $push: { members: { user: u._id, role: wsRoles[wsRole] } },
         });
       }
 
-      // project roles
-      if (!label.includes("outsider")) {
-        const role = label.split("project ")[1];
+      // project role (from "project <role>")
+      const projectRole = label.match(/project (manager|contributor|viewer)/)?.[1];
+      if (projectRole) {
         await Project.findByIdAndUpdate(projectId, {
-          $push: { members: { user: u._id, role } },
+          $push: { members: { user: u._id, role: projectRole } },
         });
       }
     }
-
-    // ws owner + project viewer: demote the owner INSIDE the project
-    await Project.findOneAndUpdate(
-      { _id: projectId, "members.user": owner._id },
-      { $set: { "members.$.role": "viewer" } }
-    );
   });
 
   afterAll(async () => {
@@ -209,17 +210,17 @@ describe("permission matrix (H2e)", () => {
 
   test("every ws-role x project-role combination answers the pinned status", async () => {
     for (const [label, wsRole] of COMBOS) {
-      const projectRole = label.includes("project ")
-        ? label.split("project ")[1]
-        : null;
-      const roleOrNull = projectRole === "outsider" ? null : projectRole;
-      const expected = expectFor(wsRole, roleOrNull);
+      const projectRole = label.match(/project (manager|contributor|viewer)/)?.[1] || null;
+      const expected = expectFor(wsRole, projectRole);
       const token = tokens.get(label);
 
       // destructive 200-cells are asserted via PUT (same gate); the matrix
       // runs the DELETE request only for the 403 cells
       for (const action of Object.keys(expected)) {
-        if (action === "deleteProject" && expected[action] === 200) continue;
+        // DELETE 200-cells: covered by cascade-deletes.test.js and
+      // project-lifecycle.test.js (same D2 gate as PUT, asserted above) —
+      // skipped here to preserve the shared project fixture.
+      if (action === "deleteProject" && expected[action] === 200) continue;
 
         const res = await runAction(action, token, ids.get(label));
         const failures = [];

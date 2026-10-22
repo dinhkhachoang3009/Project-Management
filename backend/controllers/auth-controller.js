@@ -262,7 +262,9 @@ const resetPasswordRequest = async (req, res) => {
       return res.status(500).json({ message: "Failed to send reset password email" });
     }
 
-    res.status(200).json({ message: "Reset password email sent" });
+    // A9: identical generic answer for every request — the specific copy
+    // would confirm the email exists (enumeration oracle)
+    res.status(200).json({ message: GENERIC_RESET_MESSAGE });
   } catch (error) {
     logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
