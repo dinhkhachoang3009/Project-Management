@@ -126,7 +126,10 @@ const getProjectTasks = async (req, res) => {
   try {
     const { projectId } = req.params;
 
-    const project = await Project.findById(projectId).populate("members.user");
+    const project = await Project.findById(projectId).populate(
+      "members.user",
+      "name email profilePicture"
+    );
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -147,7 +150,8 @@ const getProjectTasks = async (req, res) => {
       isArchived: false,
     })
       .populate("assignees", "name profilePicture")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({ project, tasks });
   } catch (error) {
@@ -413,7 +417,8 @@ const getMyTasks = async (req, res) => {
     })
       .populate("project", "title workspace")
       .populate("assignees", "name profilePicture")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json(tasks);
   } catch (error) {
