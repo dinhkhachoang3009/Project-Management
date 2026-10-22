@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import logger from "../libs/logger.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -30,7 +31,12 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    const user = await User.findById(decoded.userId);
+    // G1: lean + projection — every controller only reads req.user._id, but
+    // the identity fields ride along for the addComment author build (G11).
+    // Re-verify with grep before reading any other field from req.user.
+    const user = await User.findById(decoded.userId)
+      .select("_id name email profilePicture")
+      .lean();
 
     if (!user) {
       return res.status(401).json({
@@ -41,7 +47,10 @@ const authMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error(error);
+    logger.error("Auth middleware rejected request", {
+      error: error.message,
+      stack: error.stack,
+    });
     res.status(401).json({
       message: "Unauthorized",
     });
