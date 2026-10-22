@@ -4,11 +4,20 @@ import request from "supertest";
 import { afterAll, beforeAll, describe, expect, jest, test } from "@jest/globals";
 
 import { startTestDb, TEST_JWT_SECRET, DUMMY_BCRYPT_HASH } from "./helpers/test-env.js";
-import createApp from "../app.js";
 import User from "../models/user.js";
 import Verification from "../models/verification.js";
 import Workspace from "../models/workspace.js";
 import WorkspaceInvite from "../models/workspace-invite.js";
+
+// G6: auth routes now pass the Arcjet guard; these tests must never pay a
+// real network decision — allow all (the guard itself is covered in
+// rate-limit-guard.test.js). Must run BEFORE the app chain import resolves.
+jest.unstable_mockModule("../libs/arcjet.js", () => ({
+  __esModule: true,
+  default: { protect: async () => ({ isDenied: () => false }) },
+}));
+
+const { default: createApp } = await import("../app.js");
 
 // send-email.js calls global fetch; patching it here gives deterministic
 // outcomes and keeps tests off the real Brevo API.

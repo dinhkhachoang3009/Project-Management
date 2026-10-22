@@ -1,9 +1,10 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import logger from "../libs/logger.js";
 import Verification from "../models/verification.js";
 import { sendEmail } from "../libs/send-email.js";
-import aj from "../libs/arcjet.js";
+import { arcjetGuard } from "../libs/arcjet-guard.js";
 
 // A VALID bcrypt hash (of a fixed dummy password) used to flatten the
 // timing of "user does not exist" paths (anti-enumeration/timing hardening).
@@ -16,13 +17,7 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const decision = await aj.protect(req, { email, requested: 1 });
-
-    if (decision.isDenied()) {
-      res.writeHead(403, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: "Invalid email address" }));
-      return;
-    }
+    if (!(await arcjetGuard(req, res, { email, requested: 1 }))) return;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -77,7 +72,7 @@ const registerUser = async (req, res) => {
     if (error && error.code === 11000) {
       return res.status(400).json({ message: "Email address already exists" });
     }
-    console.error(error);
+    logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -86,9 +81,12 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // G6: unthrottled credential probing + reset spam stop here
+    if (!(await arcjetGuard(req, res, { requested: 1 }))) return;
+
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
     if (!user.isEmailVerified) {
       const existingVerification = await Verification.findOne({
@@ -139,14 +137,17 @@ const loginUser = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    user.lastLogin = new Date();
-    await user.save();
+    // G13: targeted update — a concurrent profile save must not be clobbered
+    // by a full-doc read-modify-write of lastLogin
+    await User.findByIdAndUpdate(user._id, {
+      $set: { lastLogin: new Date() },
+    });
 
     const userData = user.toObject();
     delete userData.password;
@@ -158,7 +159,7 @@ const loginUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -211,7 +212,7 @@ const verifyEmail = async (req, res) => {
     if (error instanceof jwt.JsonWebTokenError) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    console.error(error);
+    logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -219,6 +220,9 @@ const verifyEmail = async (req, res) => {
 const resetPasswordRequest = async (req, res) => {
   try {
     const { email } = req.body;
+
+    // G6: reset email spam is the most expensive unsolicited path
+    if (!(await arcjetGuard(req, res, { email, requested: 1 }))) return;
 
     const user = await User.findOne({ email });
     if (!user || !user.isEmailVerified) {
@@ -260,7 +264,7 @@ const resetPasswordRequest = async (req, res) => {
 
     res.status(200).json({ message: "Reset password email sent" });
   } catch (error) {
-    console.error(error);
+    logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -316,7 +320,7 @@ const verifyResetPasswordTokenAndResetPassword = async (req, res) => {
     if (error instanceof jwt.JsonWebTokenError) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    console.error(error);
+    logger.error("Handler error", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Internal server error" });
   }
 };
