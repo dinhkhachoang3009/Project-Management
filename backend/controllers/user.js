@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import logger from "../libs/logger.js";
 
 const getUserProfile = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ const getUserProfile = async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    logger.error("Fetch user profile failed", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -38,7 +39,7 @@ const updateUserProfile = async (req, res) => {
 
     res.status(200).json(userData);
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    logger.error("Update user profile failed", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -65,7 +66,7 @@ const changePassword = async (req, res) => {
     );
 
     if (!isPasswordValid) {
-      return res.status(403).json({ message: "Invalid old password" });
+      return res.status(400).json({ message: "Invalid old password" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -75,7 +76,7 @@ const changePassword = async (req, res) => {
 
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-    console.error("Error changing password:", error);
+    logger.error("Change password failed", { error: error.message, stack: error.stack });
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -21,7 +21,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const url: string = error.config?.url || "";
+    // Part G made login failures 401: auth endpoints must not trigger the
+    // global force-logout (a wrong password is not a stale session)
+    const isAuthEndpoint = url.includes("/auth/");
+    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("force-logout"));
       }
