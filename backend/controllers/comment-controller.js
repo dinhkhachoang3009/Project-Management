@@ -17,10 +17,17 @@ const addComment = async (req, res) => {
       text,
     });
 
-    const populatedComment = await Comment.findById(comment._id).populate(
-      "author",
-      "name email profilePicture"
-    );
+    // G11: no re-find — the auth'd user doc already carries the identity
+    // fields the client renders (G1 keeps them in the lean req.user)
+    const populatedComment = {
+      ...comment.toObject(),
+      author: {
+        _id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        profilePicture: req.user.profilePicture,
+      },
+    };
 
     recordActivity(
       req.user._id,
@@ -45,7 +52,8 @@ const getCommentsByTaskId = async (req, res) => {
 
     const comments = await Comment.find({ task: taskId })
       .populate("author", "name email profilePicture")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json(comments);
   } catch (error) {

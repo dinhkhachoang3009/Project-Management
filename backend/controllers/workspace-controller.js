@@ -48,7 +48,9 @@ const getWorkspaces = async (req, res) => {
   try {
     const workspaces = await Workspace.find({
       "members.user": req.user._id,
-    }).sort({ createdAt: -1 });
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json(workspaces);
   } catch (error) {
@@ -111,7 +113,8 @@ const getWorkspaceProjects = async (req, res) => {
       members: { $elemMatch: { user: req.user._id } },
     })
       .populate("tasks", "status")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({ projects, workspace });
   } catch (error) {
@@ -339,7 +342,8 @@ const getWorkspaceStats = async (req, res) => {
           "tasks",
           "title status dueDate project updatedAt createdAt isArchived priority"
         )
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
     ]);
 
     // locked D3 contract: archived tasks are excluded from ALL dashboard
