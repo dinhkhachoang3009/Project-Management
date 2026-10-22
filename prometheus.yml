@@ -11,4 +11,8 @@ scrape_configs:
     static_configs:
       - targets: ["taskmanager-backend:5000"]
     metrics_path: "/metrics"
+    # G4a: /metrics is fail-closed bearer-auth — same value as backend METRICS_TOKEN
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/metrics-token
     scrape_interval: 15s

@@ -23,13 +23,19 @@ const httpRequestDuration = new client.Histogram({
   registers: [register],
 });
 
+// G4a: matched talks template, unmatched collapse to one label — a raw
+// req.path would create one counter series per URL ever called.
+export function routeLabel(req) {
+  return req && req.route ? req.route.path : "unmatched";
+}
+
 // Middleware đo metric
 export function metricsMiddleware(req, res, next) {
   const start = Date.now();
 
   res.on("finish", () => {
     const duration = (Date.now() - start) / 1000;
-    const route = req.route ? req.route.path : req.path;
+    const route = routeLabel(req);
     const method = req.method;
     const status = res.statusCode;
 
@@ -40,8 +46,13 @@ export function metricsMiddleware(req, res, next) {
   next();
 }
 
-// Endpoint /metrics
+// Endpoint /metrics — G4a: fail-closed bearer guard; unset METRICS_TOKEN = 401
 export async function metricsEndpoint(req, res) {
+  const expected = process.env.METRICS_TOKEN;
+  const provided = req.headers.authorization;
+  if (!expected || provided !== `Bearer ${expected}`) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
   try {
     const metrics = await register.metrics();
     res.set("Content-Type", register.contentType);
